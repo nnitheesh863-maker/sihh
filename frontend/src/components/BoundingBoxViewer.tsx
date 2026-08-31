@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Defect } from '../types';
 import { Eye, Layers, ZoomIn } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface BoundingBoxViewerProps {
   imageUrl: string;
@@ -17,8 +18,10 @@ export const BoundingBoxViewer: React.FC<BoundingBoxViewerProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [showBoxes, setShowBoxes] = useState(true);
+  const [canvasDim, setCanvasDim] = useState({ width: 0, height: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [showBoxes, setShowBoxes] = useState(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -26,8 +29,10 @@ export const BoundingBoxViewer: React.FC<BoundingBoxViewerProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    setImageLoaded(false);
+    setImageError(false);
+
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.src = imageUrl;
 
     img.onload = () => {
@@ -39,67 +44,18 @@ export const BoundingBoxViewer: React.FC<BoundingBoxViewerProps> = ({
 
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
+      setCanvasDim({ width: canvasWidth, height: canvasHeight });
 
-      // Clear & Draw base image
+      // Clear & Draw base image only
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-
-      if (!showBoxes) return;
-
-      // Draw bounding boxes
-      defects.forEach((defect, idx) => {
-        const isSelected = selectedDefectIndex === idx;
-        const bbox = defect.bbox || {
-          xMin: defect.xMin ?? 0.2,
-          yMin: defect.yMin ?? 0.2,
-          xMax: defect.xMax ?? 0.6,
-          yMax: defect.yMax ?? 0.6,
-        };
-
-        const x = bbox.xMin * canvasWidth;
-        const y = bbox.yMin * canvasHeight;
-        const w = (bbox.xMax - bbox.xMin) * canvasWidth;
-        const h = (bbox.yMax - bbox.yMin) * canvasHeight;
-
-        // Color based on severity
-        let strokeColor = '#22c55e'; // Green
-        let fillColor = 'rgba(34, 197, 94, 0.15)';
-
-        if (defect.severity === 'Severe' || defect.severity === 'High') {
-          strokeColor = '#ef4444'; // Red
-          fillColor = isSelected ? 'rgba(239, 68, 68, 0.35)' : 'rgba(239, 68, 68, 0.18)';
-        } else if (defect.severity === 'Medium') {
-          strokeColor = '#f59e0b'; // Amber
-          fillColor = isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(245, 158, 11, 0.18)';
-        }
-
-        // Draw fill & border
-        ctx.fillStyle = fillColor;
-        ctx.fillRect(x, y, w, h);
-
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = isSelected ? 4 : 2.5;
-        ctx.setLineDash(isSelected ? [6, 4] : []);
-        ctx.strokeRect(x, y, w, h);
-        ctx.setLineDash([]);
-
-        // Label Tag
-        const labelText = `${defect.defectType || defect.diseaseName || 'Disease'} (${Math.round(
-          defect.confidence * 100
-        )}%)`;
-
-        ctx.font = 'bold 12px Inter, sans-serif';
-        const textWidth = ctx.measureText(labelText).width;
-        const pad = 6;
-
-        ctx.fillStyle = strokeColor;
-        ctx.fillRect(x, Math.max(0, y - 24), textWidth + pad * 2, 22);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(labelText, x + pad, Math.max(14, y - 8));
-      });
     };
-  }, [imageUrl, defects, selectedDefectIndex, showBoxes]);
+
+    img.onerror = () => {
+      setImageError(true);
+      setImageLoaded(true); // Stop loading state
+    };
+  }, [imageUrl]);
 
   return (
     <div ref={containerRef} className="relative w-full rounded-2xl overflow-hidden glass-card border border-slate-800">
@@ -127,34 +83,88 @@ export const BoundingBoxViewer: React.FC<BoundingBoxViewerProps> = ({
 
       {/* Canvas Box */}
       <div className="relative flex items-center justify-center p-2 bg-slate-950/60 min-h-[300px]">
-        {!imageLoaded && (
+        {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm gap-2">
             <ZoomIn className="h-5 w-5 animate-spin text-emerald-400" />
             Loading inspection image...
           </div>
         )}
-        <canvas
-          ref={canvasRef}
-          onClick={(e) => {
-            if (!canvasRef.current || !defects.length) return;
-            const rect = canvasRef.current.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) / rect.width;
-            const clickY = (e.clientY - rect.top) / rect.height;
 
-            const foundIdx = defects.findIndex((d) => {
-              const bbox = d.bbox || {
-                xMin: d.xMin ?? 0.2,
-                yMin: d.yMin ?? 0.2,
-                xMax: d.xMax ?? 0.6,
-                yMax: d.yMax ?? 0.6,
-              };
-              return clickX >= bbox.xMin && clickX <= bbox.xMax && clickY >= bbox.yMin && clickY <= bbox.yMax;
-            });
+        {imageError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
+            <Layers className="h-8 w-8 text-rose-500 opacity-50" />
+            <span>Unable to load AI processed image.</span>
+            <span className="text-xs text-slate-500">Cross-origin or expired URL.</span>
+          </div>
+        )}
+        
+        <div className="relative" style={{ width: canvasDim.width || '100%', height: canvasDim.height || 'auto' }}>
+          <canvas
+            ref={canvasRef}
+            className="max-w-full rounded-xl shadow-2xl block"
+          />
+          
+          {/* Animated Bounding Boxes */}
+          {showBoxes && imageLoaded && defects.map((defect, idx) => {
+            const isSelected = selectedDefectIndex === idx;
+            const bbox = defect.bbox || {
+              xMin: defect.xMin ?? 0.2,
+              yMin: defect.yMin ?? 0.2,
+              xMax: defect.xMax ?? 0.6,
+              yMax: defect.yMax ?? 0.6,
+            };
 
-            onSelectDefect(foundIdx !== -1 ? foundIdx : null);
-          }}
-          className="max-w-full rounded-xl cursor-pointer shadow-2xl"
-        />
+            const x = bbox.xMin * 100;
+            const y = bbox.yMin * 100;
+            const w = (bbox.xMax - bbox.xMin) * 100;
+            const h = (bbox.yMax - bbox.yMin) * 100;
+
+            let strokeColor = '#22c55e'; // Green
+            let fillColor = 'rgba(34, 197, 94, 0.15)';
+
+            if (defect.severity === 'Severe' || defect.severity === 'High') {
+              strokeColor = '#ef4444'; // Red
+              fillColor = isSelected ? 'rgba(239, 68, 68, 0.35)' : 'rgba(239, 68, 68, 0.18)';
+            } else if (defect.severity === 'Medium') {
+              strokeColor = '#f59e0b'; // Amber
+              fillColor = isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(245, 158, 11, 0.18)';
+            }
+
+            // Handle API mismatches from raw python response vs TS interface
+            const defectType = defect.defectType || (defect as any).qualityClass || 'Disease';
+            const diseaseName = defect.diseaseName || (defect as any).disease;
+            const conf = defect.confidence ?? (defect as any).diseaseConfidence ?? 1.0;
+            const labelTitle = diseaseName ? diseaseName : defectType;
+            const labelText = `${labelTitle} (${Math.round(conf * 100)}%)`;
+
+            return (
+              <motion.div
+                key={idx}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: idx * 0.15, ease: "easeOut" }}
+                onClick={() => onSelectDefect(isSelected ? null : idx)}
+                className="absolute cursor-pointer rounded-sm"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  width: `${w}%`,
+                  height: `${h}%`,
+                  border: `${isSelected ? '4px' : '2px'} ${isSelected ? 'dashed' : 'solid'} ${strokeColor}`,
+                  backgroundColor: fillColor,
+                }}
+              >
+                {/* Label */}
+                <div 
+                  className="absolute left-[-2px] top-[-24px] px-1.5 py-0.5 whitespace-nowrap font-bold text-[10px] sm:text-xs text-white"
+                  style={{ backgroundColor: strokeColor }}
+                >
+                  {labelText}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
     </div>

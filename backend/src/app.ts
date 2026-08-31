@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
+import path from 'path';
 
 import { config } from './config/env';
 import { swaggerSpec } from './docs/swagger';
@@ -18,11 +19,7 @@ import historyRoutes from './routes/history.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 
 // ── Aliased Routes for Full Backward Compatibility ──
-import analysisRoutes from './routes/analysis.routes';
-import farmerRoutes from './routes/farmer.routes';
-import certificateRoutes from './routes/certificate.routes';
-import adminRoutes from './routes/admin.routes';
-import procurementRoutes from './routes/procurement.routes';
+// Removed in architecture cleanup
 
 export const createApp = (): Application => {
   const app = express();
@@ -55,6 +52,9 @@ export const createApp = (): Application => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // ── Static Files (Local fallback for S3) ──
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
   // ── HTTP request logging ──
   app.use(
     morgan('combined', {
@@ -65,7 +65,7 @@ export const createApp = (): Application => {
   );
 
   // ── Health check ──
-  app.get('/health', (_req: Request, res: Response) => {
+  app.get('/api/health', (_req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       data: {
@@ -98,11 +98,7 @@ export const createApp = (): Application => {
   app.use(`${API}/dashboard`, dashboardRoutes);
 
   // Backward compatibility alias routes
-  app.use(`${API}/onions`, analysisRoutes);
-  app.use(`${API}/farmers`, farmerRoutes);
-  app.use(`${API}/certificate`, certificateRoutes);
-  app.use(`${API}/admin`, adminRoutes);
-  app.use(`${API}/procurement`, procurementRoutes);
+  // Removed in architecture cleanup
 
   // ── 404 handler ──
   app.use(notFoundHandler);

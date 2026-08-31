@@ -3,8 +3,21 @@ import { onionApi } from '../api/onion.api';
 import { OnionAnalysis } from '../types';
 import { BoundingBoxViewer } from '../components/BoundingBoxViewer';
 import { LoadingOverlay } from '../components/LoadingOverlay';
-import { Upload, Sparkles, AlertTriangle, ArrowRight, Activity, Leaf, CheckCircle2 } from 'lucide-react';
+import { Upload, Sparkles, AlertTriangle, ArrowRight, Activity, Leaf, CheckCircle2, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedCounter } from '../components/AnimatedCounter';
+import { QualityCertificate } from '../components/QualityCertificate';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+};
+
+const panelVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 const SAMPLE_IMAGES = [
   { name: 'Purple Blotch', url: '/sample-1.jpg', status: 'completed' },
@@ -21,6 +34,7 @@ export const ScannerPage: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [context, setContext] = useState({ location: '', cropStage: 'Harvested', rainfall: 'Low', storage: 'Ventilated' });
+  const [showCert, setShowCert] = useState(false);
 
   const handleFileChange = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -80,6 +94,9 @@ export const ScannerPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {isScanning && <LoadingOverlay stage={scanStage} />}
+      {showCert && analysisResult && (
+        <QualityCertificate analysis={analysisResult} onClose={() => setShowCert(false)} />
+      )}
 
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2 pl-2">
@@ -134,7 +151,7 @@ export const ScannerPage: React.FC = () => {
               <div className="relative w-full h-full flex items-center justify-center rounded-[1.5rem] overflow-hidden bg-black/40">
                 {analysisResult ? (
                   <BoundingBoxViewer
-                    imageUrl={analysisResult.processedImage || previewUrl}
+                    imageUrl={analysisResult.processedImageUrl || previewUrl}
                     defects={analysisResult.defects || []}
                     selectedDefectIndex={null}
                     onSelectDefect={() => {}}
@@ -145,7 +162,7 @@ export const ScannerPage: React.FC = () => {
 
                 {/* Overlays simulating the TerraScan UI */}
                 {!analysisResult && (
-                  <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
                     {/* Targeting Crosshairs */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-[1px] border-emerald-400/50 rounded-full border-dashed animate-[spin_10s_linear_infinite]" />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-emerald-400/30 rounded-full" />
@@ -156,6 +173,16 @@ export const ScannerPage: React.FC = () => {
                       <span className="uppercase tracking-widest text-xs font-bold">Scanning...</span>
                       <div className="w-4 h-6 border-r-2 border-b-2 border-emerald-400"></div>
                     </div>
+                    
+                    {/* Animated Scanning Line */}
+                    {isScanning && (
+                      <motion.div 
+                        initial={{ top: '-10%' }}
+                        animate={{ top: '110%' }}
+                        transition={{ duration: 2, ease: "linear", repeat: Infinity }}
+                        className="absolute left-0 w-full h-1 bg-emerald-400 shadow-[0_0_15px_#34d399] z-50"
+                      />
+                    )}
                   </div>
                 )}
                 
@@ -206,22 +233,31 @@ export const ScannerPage: React.FC = () => {
             )}
             
             {analysisResult && (
-              <button
-                onClick={() => { setPreviewUrl(null); setSelectedFile(null); setAnalysisResult(null); }}
-                className="flex-shrink-0 px-8 py-4 rounded-[1.5rem] bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition-all"
-              >
-                Scan New Batch
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowCert(true)}
+                  className="flex-shrink-0 px-6 py-4 rounded-[1.5rem] bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-extrabold text-sm border border-emerald-200 flex items-center justify-center gap-2 transition-all"
+                >
+                  <FileText className="h-4 w-4" />
+                  View Report
+                </button>
+                <button
+                  onClick={() => { setPreviewUrl(null); setSelectedFile(null); setAnalysisResult(null); }}
+                  className="flex-shrink-0 px-8 py-4 rounded-[1.5rem] bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition-all"
+                >
+                  Scan New Batch
+                </button>
+              </div>
             )}
           </div>
 
         </div>
 
         {/* Right Column (Analytics & Recommendations) - 4 cols */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="lg:col-span-4 flex flex-col gap-6">
           
           {/* Smart Context Engine */}
-          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+          <motion.div variants={panelVariants} className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
               <Leaf className="w-4 h-4 text-emerald-500" />
               Environmental Context
@@ -256,10 +292,10 @@ export const ScannerPage: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
           
           {/* Quality Breakdown Chart */}
-          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+          <motion.div variants={panelVariants} className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-800">Batch Quality Rate</h3>
               <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 cursor-pointer">
@@ -296,10 +332,10 @@ export const ScannerPage: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-400">Awaiting scan...</span>
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* AI Recommendations */}
-          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+          <motion.div variants={panelVariants} className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
             <h3 className="text-base font-bold text-slate-800">AI Recommendations</h3>
             
             <div className="flex flex-col gap-2 mt-2">
@@ -323,11 +359,11 @@ export const ScannerPage: React.FC = () => {
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* AI Transparency & Explainability */}
           {analysisResult?.batchReport && (
-            <div className="bg-slate-900 rounded-[2rem] p-6 shadow-2xl shadow-slate-900/20 flex flex-col gap-4 relative overflow-hidden">
+            <motion.div variants={panelVariants} className="bg-slate-900 rounded-[2rem] p-6 shadow-2xl shadow-slate-900/20 flex flex-col gap-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                 <Sparkles className="w-24 h-24 text-emerald-500" />
               </div>
@@ -341,7 +377,7 @@ export const ScannerPage: React.FC = () => {
               <div className="relative z-10 grid grid-cols-2 gap-4 mt-2">
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Visual Score</span>
-                  <p className="text-2xl font-black text-white">{analysisResult.batchReport.qualityScore}%</p>
+                  <p className="text-2xl font-black text-white"><AnimatedCounter value={analysisResult.batchReport.qualityScore} suffix="%" /></p>
                   <p className="text-[10px] text-slate-400 mt-1">Confidence interval: ±4.2%</p>
                 </div>
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
@@ -369,17 +405,17 @@ export const ScannerPage: React.FC = () => {
                   <span>Calculated environmental risk as {analysisResult.batchReport.overallRiskLevel}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Efficiency / Grading Score */}
-          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+          <motion.div variants={panelVariants} className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
             <h3 className="text-base font-bold text-slate-800">Quality Index</h3>
             
             {analysisResult?.batchReport ? (
               <div className="flex items-center justify-between mt-2">
                 <div>
-                  <p className="text-4xl font-black text-slate-800">{analysisResult.batchReport.gradeAPercentage}%</p>
+                  <p className="text-4xl font-black text-slate-800"><AnimatedCounter value={analysisResult.batchReport.gradeAPercentage} suffix="%" /></p>
                   <p className="text-xs font-bold text-emerald-500 uppercase tracking-wide mt-1">Grade A Yield</p>
                 </div>
                 
@@ -400,9 +436,9 @@ export const ScannerPage: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-400">No data</span>
               </div>
             )}
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </div>
     </div>
   );

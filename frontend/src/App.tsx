@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
 import { ScannerPage } from './pages/ScannerPage';
@@ -40,11 +41,22 @@ const MainContent: React.FC = () => {
       
       <main className="flex-1 pb-12 p-4 md:p-8">
         <div className="max-w-[1600px] mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[85vh]">
-          {activeTab === 'scanner' && <ScannerPage />}
-          {activeTab === 'history' && <HistoryPage />}
-          {activeTab === 'centers' && <APMCCentersPage />}
-          {activeTab === 'officer' && <OfficerDashboard />}
-          {activeTab === 'admin' && <AdminDashboard />}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="w-full h-full"
+            >
+              {activeTab === 'scanner' && <ScannerPage />}
+              {activeTab === 'history' && <HistoryPage />}
+              {activeTab === 'centers' && <APMCCentersPage />}
+              {activeTab === 'officer' && <OfficerDashboard />}
+              {activeTab === 'admin' && <AdminDashboard />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 

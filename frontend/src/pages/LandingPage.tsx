@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import { ScanLine, ShieldCheck, FileText, ChevronRight, Star, Users, Activity, Leaf, ArrowRight, Menu, X, CheckCircle } from 'lucide-react';
 import { AuthModal } from '../components/AuthModal';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Common animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
 
 const STATS = [
   { value: '12K+', label: 'Farmers Served' },
@@ -62,9 +77,13 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
             <button onClick={openLogin} className="text-sm font-bold text-gray-700 hover:text-green-600 transition-colors">Sign In</button>
-            <button onClick={openRegister} className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
+            <motion.button 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+              onClick={openRegister} 
+              className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm">
               Get Started →
-            </button>
+            </motion.button>
           </div>
 
           {/* Mobile menu toggle */}
@@ -96,43 +115,51 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24">
+        <motion.div 
+          initial="hidden" 
+          animate="visible" 
+          variants={staggerContainer}
+          className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24">
           <div className="max-w-2xl">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-green-600/20 border border-green-500/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-green-600/20 border border-green-500/30 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               <span className="text-green-300 text-xs font-bold uppercase tracking-wider">Smart Crop Intelligence · SIH 2026</span>
-            </div>
+            </motion.div>
 
-            <h1 className="text-5xl sm:text-6xl font-black text-white leading-tight mb-6">
+            <motion.h1 variants={fadeInUp} className="text-5xl sm:text-6xl font-black text-white leading-tight mb-6">
               Onion Disease<br />
               Detection, <em className="text-green-400 not-italic">done<br />right now.</em>
-            </h1>
+            </motion.h1>
 
-            <p className="text-lg text-gray-200 mb-8 leading-relaxed max-w-xl">
+            <motion.p variants={fadeInUp} className="text-lg text-gray-200 mb-8 leading-relaxed max-w-xl">
               AI-powered onion quality assessment using YOLO11n computer vision. Upload a photo — get instant disease detection, severity grading, and a downloadable PDF report in seconds.
-            </p>
+            </motion.p>
 
             {/* Hero CTAs */}
-            <div className="flex flex-wrap gap-4 mb-12">
-              <button
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 mb-12">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={openRegister}
                 className="flex items-center gap-2 px-7 py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-full transition-all shadow-lg shadow-green-600/30 text-sm"
               >
                 Start Free Analysis
                 <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={openLogin}
                 className="flex items-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold rounded-full transition-all backdrop-blur-sm text-sm"
               >
                 Sign In
                 <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
             {/* Social Proof */}
-            <div className="flex items-center gap-4">
+            <motion.div variants={fadeInUp} className="flex items-center gap-4">
               <div className="flex -space-x-2">
                 {['👨‍🌾','👩‍🌾','👨‍🔬','👩‍🔬'].map((emoji, i) => (
                   <div key={i} className="w-9 h-9 rounded-full bg-green-700 border-2 border-white flex items-center justify-center text-sm">{emoji}</div>
@@ -144,9 +171,9 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
                 </div>
                 <p className="text-xs text-gray-300 mt-0.5">Trusted by <strong className="text-white">2,000+</strong> farmers</p>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stat cards overlapping hero bottom */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
@@ -214,9 +241,11 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
             <p className="text-gray-500 text-sm max-w-sm mt-4">We handle the full seasonal crop health cycle — no juggling multiple tools or apps.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {SERVICES.map((s, i) => (
-              <div key={i} className="group bg-white rounded-3xl p-7 shadow-sm hover:shadow-xl border border-gray-100 hover:border-green-200 transition-all duration-300">
+              <motion.div key={i} variants={fadeInUp} className="group bg-white rounded-3xl p-7 shadow-sm hover:shadow-xl border border-gray-100 hover:border-green-200 transition-all duration-300">
                 <div className="w-14 h-14 bg-green-50 group-hover:bg-green-600 rounded-2xl flex items-center justify-center mb-5 transition-colors duration-300">
                   <div className="text-green-600 group-hover:text-white transition-colors duration-300">{s.icon}</div>
                 </div>
@@ -225,9 +254,9 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
                 <button onClick={openRegister} className="flex items-center gap-2 text-xs font-bold text-green-600 hover:gap-3 transition-all">
                   Learn More <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -239,38 +268,26 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
             <h2 className="text-4xl font-black text-gray-900">How we work,<br /><em className="text-green-600 not-italic">start to finish</em></h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            
+            {/* Connection Line */}
+            <div className="hidden md:block absolute top-24 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-green-100 via-green-300 to-green-100 z-0"></div>
+
             {HOW_IT_WORKS.map((step, i) => (
-              <div key={i} className="relative">
-                {i < HOW_IT_WORKS.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-px bg-green-200 z-0" style={{ width: 'calc(100% - 2rem)' }}></div>
-                )}
-                <div className="relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-green-600 text-white flex items-center justify-center font-black text-xl mb-5 shadow-lg shadow-green-600/30">
-                    {step.step}
-                  </div>
-                  <h3 className="font-black text-gray-900 mb-2 text-lg">{step.title}</h3>
+              <motion.div key={i} variants={fadeInUp} className="relative z-10 flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-white border-[6px] border-green-50 text-green-600 rounded-full flex items-center justify-center font-black text-xl shadow-lg mb-6 shadow-green-100">
+                  {i + 1}
+                </div>
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 w-full h-full flex flex-col items-center hover:shadow-lg transition-shadow">
+                  <div className="p-3 bg-green-50 text-green-600 rounded-2xl mb-4">{step.icon}</div>
+                  <h4 className="font-bold text-gray-900 mb-2">{step.title}</h4>
                   <p className="text-sm text-gray-500 leading-relaxed">{step.desc}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
-
-          {/* Last step highlight */}
-          <div className="mt-16 bg-green-600 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-                <CheckCircle className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-white">Satisfaction Guaranteed</h3>
-                <p className="text-green-100 text-sm mt-1">Every scan backed by YOLO11n AI — trained and verified for onion disease detection.</p>
-              </div>
-            </div>
-            <button onClick={openRegister} className="shrink-0 px-7 py-3.5 bg-white text-green-700 font-black rounded-full hover:bg-green-50 transition-colors shadow-sm text-sm">
-              Start Free Today →
-            </button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -300,24 +317,26 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
       </section>
 
       {/* ── FINAL CTA ──────────────────────────────────────────────────── */}
-      <section id="contact" className="py-24 bg-gray-900 relative overflow-hidden">
+      <motion.section 
+        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}
+        id="contact" className="py-24 bg-gray-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <img src="/hero-farm.jpg" alt="" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-xs font-bold text-green-400 uppercase tracking-widest mb-4">Get Started Today</p>
-          <h2 className="text-5xl font-black text-white mb-6">Protect your<br />onion harvest now.</h2>
-          <p className="text-gray-300 text-lg mb-10">Free for all farmers. Backed by AI. Trusted at APMC procurement centers across India.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <motion.p variants={fadeInUp} className="text-xs font-bold text-green-400 uppercase tracking-widest mb-4">Get Started Today</motion.p>
+          <motion.h2 variants={fadeInUp} className="text-5xl font-black text-white mb-6">Protect your<br />onion harvest now.</motion.h2>
+          <motion.p variants={fadeInUp} className="text-gray-300 text-lg mb-10">Free for all farmers. Backed by AI. Trusted at APMC procurement centers across India.</motion.p>
+          <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 justify-center">
             <button onClick={openRegister} className="px-8 py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-full transition-colors shadow-lg shadow-green-600/30 text-sm">
               Register as Farmer →
             </button>
             <button onClick={openLogin} className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold rounded-full transition-colors text-sm">
               Already have an account
             </button>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── FOOTER ─────────────────────────────────────────────────────── */}
       <footer className="bg-gray-950 py-8 text-center border-t border-gray-800">
