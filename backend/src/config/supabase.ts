@@ -1,15 +1,12 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { config } from './env';
 import { logger } from '../utils/logger';
 
-// ─── Supabase Client Config & Mock Initializer ────────────────────────────────
+// ─── Supabase JS SDK Singleton Initializer ────────────────────────────────────
 
-export interface SupabaseConfig {
-  url: string;
-  anonKey: string;
-  isConfigured: boolean;
-}
+let supabaseClient: SupabaseClient | null = null;
 
-export const getSupabaseConfig = (): SupabaseConfig => {
+export const getSupabaseClient = (): SupabaseClient | null => {
   const isConfigured =
     !!config.supabase.url &&
     !!config.supabase.anonKey &&
@@ -17,12 +14,22 @@ export const getSupabaseConfig = (): SupabaseConfig => {
     config.supabase.anonKey !== 'mock_supabase_key';
 
   if (!isConfigured) {
-    logger.info('[SUPABASE] Supabase credentials not set or mock. Operating in hybrid/local fallback mode.');
+    logger.info('[SUPABASE] Operating in hybrid fallback mode. Using local PostgreSQL & S3 storage.');
+    return null;
   }
 
-  return {
-    url: config.supabase.url,
-    anonKey: config.supabase.anonKey,
-    isConfigured,
-  };
+  if (!supabaseClient) {
+    supabaseClient = createClient(config.supabase.url, config.supabase.anonKey, {
+      auth: {
+        persistSession: false,
+      },
+    });
+    logger.info('✅ Supabase client initialized successfully.');
+  }
+
+  return supabaseClient;
+};
+
+export const isSupabaseReady = (): boolean => {
+  return getSupabaseClient() !== null;
 };

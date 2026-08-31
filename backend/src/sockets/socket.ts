@@ -1,9 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
-import { config } from '../config/config';
+import { config } from '../config/env';
 import { logger } from '../utils/logger';
-
-// ─── Socket.IO Setup ──────────────────────────────────────────────────────────
 
 let io: SocketServer;
 
@@ -19,7 +17,6 @@ export const initializeSocketServer = (httpServer: HttpServer): SocketServer => 
   io.on('connection', (socket) => {
     logger.info(`Socket connected: ${socket.id}`);
 
-    // Join a personal room keyed by userId
     socket.on('join', (userId: string) => {
       socket.join(`user:${userId}`);
       logger.info(`Socket ${socket.id} joined room user:${userId}`);
@@ -33,9 +30,6 @@ export const initializeSocketServer = (httpServer: HttpServer): SocketServer => 
   return io;
 };
 
-/**
- * Emit analysis progress updates to a specific user's room
- */
 export const emitAnalysisUpdate = (
   userId: string,
   event: string,

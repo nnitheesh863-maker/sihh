@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { register, login, refreshToken, logout, getMe } from '../controllers/auth.controller';
-import { validate } from '../middlewares/validate.middleware';
-import { authenticate } from '../middlewares/auth.middleware';
-import { registerSchema, loginSchema, refreshTokenSchema } from '../validators/schemas';
+import { validate } from '../middleware/validate.middleware';
+import { authenticate } from '../middleware/auth.middleware';
+import { registerSchema, loginSchema, refreshTokenSchema } from '../validators/auth.validator';
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.post('/refresh', validate(refreshTokenSchema), refreshToken);
 // POST /api/auth/logout
 router.post('/logout', logout);
 
-// GET /api/auth/me – requires authentication
+// GET /api/auth/me
 router.get('/me', authenticate, getMe);
 
 export default router;

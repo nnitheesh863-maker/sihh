@@ -5,20 +5,24 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 
-import { config } from './config/config';
+import { config } from './config/env';
 import { swaggerSpec } from './docs/swagger';
 import { logger } from './utils/logger';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
-// ── Routes ──
+// ── New Modular Routes ──
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import detectionRoutes from './routes/detection.routes';
+import historyRoutes from './routes/history.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+
+// ── Aliased Routes for Full Backward Compatibility ──
 import analysisRoutes from './routes/analysis.routes';
 import farmerRoutes from './routes/farmer.routes';
 import certificateRoutes from './routes/certificate.routes';
 import adminRoutes from './routes/admin.routes';
 import procurementRoutes from './routes/procurement.routes';
-
-// ─── Express App Factory ──────────────────────────────────────────────────────
 
 export const createApp = (): Application => {
   const app = express();
@@ -60,15 +64,15 @@ export const createApp = (): Application => {
     })
   );
 
-  // ── Health check (no auth) ──
+  // ── Health check ──
   app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       data: {
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        service: 'SIH26031 Onion Grading API',
+        version: '2.0.0',
+        service: 'SIH26031 YOLO11 Onion Grading API',
       },
     });
   });
@@ -85,7 +89,15 @@ export const createApp = (): Application => {
 
   // ── API Routes ──
   const API = '/api';
+
+  // Primary modular routes
   app.use(`${API}/auth`, authRoutes);
+  app.use(`${API}/user`, userRoutes);
+  app.use(`${API}/detection`, detectionRoutes);
+  app.use(`${API}/history`, historyRoutes);
+  app.use(`${API}/dashboard`, dashboardRoutes);
+
+  // Backward compatibility alias routes
   app.use(`${API}/onions`, analysisRoutes);
   app.use(`${API}/farmers`, farmerRoutes);
   app.use(`${API}/certificate`, certificateRoutes);

@@ -6,6 +6,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config/env';
+import { getSupabaseClient, isSupabaseReady } from '../config/supabase';
 import { logger } from '../utils/logger';
 import path from 'path';
 import fs from 'fs';
@@ -43,36 +44,71 @@ const ensureLocalDir = (subDir: string): string => {
 };
 
 export const storageService = {
+  /**
+   * Upload a file buffer using Supabase Storage, AWS S3, or Local storage fallback
+   */
   async uploadFile(
     key: string,
     buffer: Buffer,
     mimeType: string
   ): Promise<string> {
-    if (!isS3Configured()) {
-      const [folder, filename] = key.split('/');
-      const dir = ensureLocalDir(folder || 'default');
-      const filepath = path.join(dir, filename || `${Date.now()}.jpg`);
-      fs.writeFileSync(filepath, buffer);
-      const url = `/uploads/${key}`;
-      logger.info(`[LOCAL STORAGE] File saved locally: ${filepath}`);
+    // 1. Try Supabase Storage if configured
+    if (isSupabaseReady()) {
+      try {
+        const supabase = getSupabaseClient()!;
+        const { data, error } = await supabase.storage
+          .from('onion-images')
+          .upload(key, buffer, {
+            contentType: mimeType,
+            upsert: true,
+          });
+
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage
+            .from('onion-images')
+            .getPublicUrl(key);
+
+          logger.info(`[SUPABASE STORAGE] Upload successful: ${publicUrlData.publicUrl}`);
+          return publicUrlData.publicUrl;
+        }
+        logger.warn(`[SUPABASE STORAGE] Error: ${error?.message}, falling back to S3/Local`);
+      } catch (err) {
+        logger.warn('[SUPABASE STORAGE] Failed upload, attempting AWS S3/Local fallback');
+      }
+    }
+
+    // 2. Try AWS S3 if configured
+    if (isS3Configured()) {
+      const command = new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: key,
+        Body: buffer,
+        ContentType: mimeType,
+        ServerSideEncryption: 'AES256',
+      });
+
+      await s3Client.send(command);
+      const url = `https://${BUCKET}.s3.${config.aws.region}.amazonaws.com/${key}`;
+      logger.info(`[AWS S3] Upload successful: ${key}`);
       return url;
     }
 
-    const command = new PutObjectCommand({
-      Bucket: BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: mimeType,
-      ServerSideEncryption: 'AES256',
-    });
-
-    await s3Client.send(command);
-    const url = `https://${BUCKET}.s3.${config.aws.region}.amazonaws.com/${key}`;
-    logger.info(`[S3 STORAGE] Upload successful: ${key}`);
+    // 3. Fallback to Local Filesystem
+    const [folder, filename] = key.split('/');
+    const dir = ensureLocalDir(folder || 'default');
+    const filepath = path.join(dir, filename || `${Date.now()}.jpg`);
+    fs.writeFileSync(filepath, buffer);
+    const url = `/uploads/${key}`;
+    logger.info(`[LOCAL STORAGE] File saved locally: ${filepath}`);
     return url;
   },
 
   async getSignedUrl(key: string, expiresInSeconds = 3600): Promise<string> {
+    if (isSupabaseReady()) {
+      const supabase = getSupabaseClient()!;
+      const { data } = supabase.storage.from('onion-images').getPublicUrl(key);
+      return data.publicUrl;
+    }
     if (!isS3Configured()) {
       return `/uploads/${key}`;
     }
@@ -81,6 +117,12 @@ export const storageService = {
   },
 
   async deleteFile(key: string): Promise<void> {
+    if (isSupabaseReady()) {
+      const supabase = getSupabaseClient()!;
+      await supabase.storage.from('onion-images').remove([key]);
+      logger.info(`[SUPABASE STORAGE] Deleted: ${key}`);
+      return;
+    }
     if (!isS3Configured()) {
       const filepath = path.join(LOCAL_UPLOAD_DIR, key);
       if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
@@ -89,7 +131,7 @@ export const storageService = {
     }
     const command = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
     await s3Client.send(command);
-    logger.info(`[S3 STORAGE] Delete successful: ${key}`);
+    logger.info(`[AWS S3] Delete successful: ${key}`);
   },
 
   async uploadPdf(key: string, buffer: Buffer): Promise<string> {
