@@ -35,42 +35,59 @@ app = FastAPI(
 
 TREATMENT_DATABASE = {
     "Purple Blotch (Alternaria porri)": {
-        "severity": "High",
-        "description": "Fungal infection causing small, water-soaked lesions that enlarge into purple spots with yellow halos.",
-        "treatment": "Spray Mancozeb 75 WP (2.5 g/L) or Tebuconazole 50% + Trifloxystrobin 25% WG (0.6 g/L). Maintain proper field drainage and adopt crop rotation with non-host crops.",
+        "symptoms": ["Small, water-soaked lesions", "Purple spots with yellow halos", "Premature defoliation"],
+        "causes": ["High humidity", "Prolonged leaf wetness", "Fungal spores"],
+        "prevention": ["Crop rotation with non-host crops", "Proper field drainage", "Use disease-free seeds"],
+        "treatment": "Apply appropriate fungicide (e.g., Mancozeb/Tebuconazole) per local agronomic guidelines.",
         "storageAdvice": "Cure onions thoroughly in well-ventilated sheds for 10-14 days before storage."
     },
     "Bacterial Soft Rot (Erwinia carotovora)": {
-        "severity": "Severe",
-        "description": "Bacterial rot resulting in soft, watery internal bulb tissue emitting a foul pungent odor.",
-        "treatment": "Avoid over-irrigation 2 weeks before harvest. Apply Copper Oxychloride 50 WP (3 g/L) + Streptocycline (0.1 g/L) at early onset. Destroy infected crop debris.",
+        "symptoms": ["Soft, watery internal bulb tissue", "Foul pungent odor", "Neck rotting"],
+        "causes": ["Bacterial infection during harvest", "Over-irrigation before harvest", "Mechanical injury"],
+        "prevention": ["Avoid over-irrigation 2 weeks before harvest", "Prevent physical damage to bulbs", "Destroy infected crop debris"],
+        "treatment": "Apply recommended bactericides (e.g., Copper Oxychloride) at early onset per local guidelines.",
         "storageAdvice": "Store bulbs at 0-2°C with 65-70% relative humidity. Immediately isolate rotting bulbs."
     },
     "Black Mold (Aspergillus niger)": {
-        "severity": "Medium",
-        "description": "Fungal black powdery spores on neck and outer scales, often favored by warm humid harvesting conditions.",
-        "treatment": "Spray Carbendazim 50 WP (1 g/L) or Trichoderma viride bio-agent (5 g/L). Avoid mechanical harvesting injury.",
+        "symptoms": ["Black powdery spores on neck and outer scales", "Shriveling of affected scales"],
+        "causes": ["Warm humid harvesting conditions", "Field soil contamination"],
+        "prevention": ["Avoid mechanical harvesting injury", "Rapid curing post-harvest"],
+        "treatment": "Use appropriate bio-agents or fungicides per local recommendations.",
         "storageAdvice": "Keep storage humidity below 70% and ensure continuous air circulation."
     },
     "Stemphylium Leaf Blight": {
-        "severity": "Medium",
-        "description": "Ovated tan/brown spots on leaves and bulb necks leading to premature foliage death.",
-        "treatment": "Foliar application of Azoxystrobin 23% SC (1 mL/L) or Dithane M-45 (2.5 g/L).",
+        "symptoms": ["Ovate tan/brown spots on leaves", "Premature foliage death"],
+        "causes": ["Extended periods of leaf wetness", "Poor air circulation"],
+        "prevention": ["Maintain proper plant spacing", "Ensure good field drainage"],
+        "treatment": "Foliar application of appropriate fungicides per local agronomic advice.",
         "storageAdvice": "Ensure bulbs are dry and neck tissues are tight and dry before storage."
     },
     "Onion Smut (Urocystis cepulae)": {
-        "severity": "High",
-        "description": "Dark dark-colored raised blisters on leaves and bulb scales containing dark powdery spores.",
-        "treatment": "Seed treatment with Thiram 75 WS (3 g/kg seed) or Carboxin 37.5% + Thiram 37.5% (2.5 g/kg). Soil solarization during summer.",
-        "storageAdvice": "Disinfect storage crates with 1% formalin solution."
+        "symptoms": ["Dark raised blisters on leaves/scales", "Powdery black spores upon rupture"],
+        "causes": ["Soil-borne fungi", "Infected seedlings"],
+        "prevention": ["Soil solarization during summer", "Use disease-free transplants"],
+        "treatment": "Seed treatment with appropriate fungicides per local agricultural extension guidelines.",
+        "storageAdvice": "Disinfect storage crates with suitable sanitizers before use."
     },
     "Mechanical Cut / Damage": {
-        "severity": "Low",
-        "description": "Physical cuts, punctures or bruises caused during harvest or sorting.",
-        "treatment": "Sort damaged bulbs to prevent secondary pathogen infection. Use protective padded sorting crates.",
+        "symptoms": ["Physical cuts", "Punctures", "Bruises on outer scales"],
+        "causes": ["Careless harvesting", "Rough sorting and handling"],
+        "prevention": ["Use protective padded sorting crates", "Train harvest labor on gentle handling"],
+        "treatment": "Sort damaged bulbs to prevent secondary pathogen infection.",
         "storageAdvice": "Divert cut/damaged onions for immediate market sale or processing; do not store long term."
     }
 }
+
+def calculate_severity(area_percentage: float) -> str:
+    # SIH Phase 11: Dynamic severity heuristic
+    if area_percentage <= 15.0:
+        return "LOW"
+    elif area_percentage <= 35.0:
+        return "MODERATE"
+    elif area_percentage <= 60.0:
+        return "HIGH"
+    else:
+        return "CRITICAL"
 
 # ── Response Models ───────────────────────────────────────────────────────────
 
@@ -86,6 +103,9 @@ class Defect(BaseModel):
     confidence: float
     areaPercentage: Optional[float] = None
     severity: str
+    symptoms: List[str]
+    causes: List[str]
+    prevention: List[str]
     treatment: str
     storageAdvice: str
     bbox: BoundingBox
@@ -145,13 +165,19 @@ def detect_diseases_yolo11(img: np.ndarray) -> List[dict]:
                 conf = float(box.conf[0])
                 xyxy = box.xyxy[0].tolist()
                 
+                area_pct = round(((xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])) / (w*h) * 100, 2)
+                severity = calculate_severity(area_pct)
+                
                 info = TREATMENT_DATABASE.get(disease, TREATMENT_DATABASE["Purple Blotch (Alternaria porri)"])
                 defects.append({
                     "type": disease.split(" (")[0],
                     "diseaseName": disease,
                     "confidence": round(conf, 4),
-                    "areaPercentage": round(((xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])) / (w*h) * 100, 2),
-                    "severity": info["severity"],
+                    "areaPercentage": area_pct,
+                    "severity": severity,
+                    "symptoms": info["symptoms"],
+                    "causes": info["causes"],
+                    "prevention": info["prevention"],
                     "treatment": info["treatment"],
                     "storageAdvice": info["storageAdvice"],
                     "bbox": {
@@ -179,12 +205,18 @@ def detect_diseases_yolo11(img: np.ndarray) -> List[dict]:
         y_max = round(min(1.0, y_min + height), 4)
         conf = round(random.uniform(0.72, 0.98), 4)
 
+        area_pct = round((x_max - x_min) * (y_max - y_min) * 100, 2)
+        severity = calculate_severity(area_pct)
+
         defects.append({
             "type": disease.split(" (")[0],
             "diseaseName": disease,
             "confidence": conf,
-            "areaPercentage": round((x_max - x_min) * (y_max - y_min) * 100, 2),
-            "severity": info["severity"],
+            "areaPercentage": area_pct,
+            "severity": severity,
+            "symptoms": info["symptoms"],
+            "causes": info["causes"],
+            "prevention": info["prevention"],
             "treatment": info["treatment"],
             "storageAdvice": info["storageAdvice"],
             "bbox": {
@@ -205,16 +237,18 @@ def compute_quality_and_grade(defects: List[dict]) -> Tuple[float, str, str, str
         damage = "LOW"
         recommendation = "ACCEPT"
     else:
-        max_severity = max([d["severity"] for d in defects], key=lambda s: {"Low": 1, "Medium": 2, "High": 3, "Severe": 4}.get(s, 1))
+        # Convert calculated severities to numeric weights for scoring
+        severity_weights = {"LOW": 1, "MODERATE": 2, "HIGH": 3, "CRITICAL": 4}
+        max_severity = max([severity_weights.get(d["severity"], 1) for d in defects])
         avg_conf = sum(d["confidence"] for d in defects) / len(defects)
         
-        if max_severity in ("Severe", "High"):
+        if max_severity >= 3: # HIGH or CRITICAL
             score = round(max(30.0, 65.0 - (len(defects) * 12.0) - (avg_conf * 10)), 1)
             grade = "REJECTED" if score < 50 else "C"
             freshness = "LOW"
             damage = "HIGH"
             recommendation = "REJECT" if grade == "REJECTED" else "CONDITIONAL_ACCEPT"
-        elif max_severity == "Medium":
+        elif max_severity == 2: # MODERATE
             score = round(random.uniform(65, 82), 1)
             grade = "B"
             freshness = "MEDIUM"
@@ -241,7 +275,7 @@ def annotate_image_yolo11(img: np.ndarray, defects: List[dict], grade: str, scor
         x1, y1 = int(bbox["xMin"] * w), int(bbox["yMin"] * h)
         x2, y2 = int(bbox["xMax"] * w), int(bbox["yMax"] * h)
         
-        color = (0, 0, 220) if d["severity"] in ("High", "Severe") else (0, 165, 255) if d["severity"] == "Medium" else (0, 200, 0)
+        color = (0, 0, 220) if d["severity"] in ("HIGH", "CRITICAL") else (0, 165, 255) if d["severity"] == "MODERATE" else (0, 200, 0)
         cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 3)
 
         label = f"{d['type']} ({int(d['confidence']*100)}%)"
