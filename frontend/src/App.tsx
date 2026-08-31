@@ -1,122 +1,56 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Navbar } from './components/Navbar';
+import { LoginPage } from './pages/LoginPage';
+import { ScannerPage } from './pages/ScannerPage';
+import { HistoryPage } from './pages/HistoryPage';
+import { APMCCentersPage } from './pages/APMCCentersPage';
+import { OfficerDashboard } from './pages/OfficerDashboard';
+import { AdminDashboard } from './pages/AdminDashboard';
 
-function App() {
-  const [count, setCount] = useState(0)
+const MainContent: React.FC = () => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>('scanner');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm font-semibold">
+        Loading SIH26031 Platform...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || activeTab === 'login') {
+    return <LoginPage onSuccess={() => setActiveTab('scanner')} />;
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950">
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      <main className="flex-1 pb-12">
+        {activeTab === 'scanner' && <ScannerPage />}
+        {activeTab === 'history' && <HistoryPage />}
+        {activeTab === 'centers' && <APMCCentersPage />}
+        {activeTab === 'officer' && <OfficerDashboard />}
+        {activeTab === 'admin' && <AdminDashboard />}
+      </main>
 
-      <div className="ticks"></div>
+      {/* Footer */}
+      <footer className="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+        <p>SIH26031 – AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
+        <p className="mt-1 text-[11px] text-slate-600">Built with React, Vite, TailwindCSS, Express, Prisma, YOLO11n Computer Vision.</p>
+      </footer>
+    </div>
+  );
+};
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <MainContent />
+    </AuthProvider>
+  );
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
