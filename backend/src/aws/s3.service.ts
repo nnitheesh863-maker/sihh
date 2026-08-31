@@ -1,0 +1,117 @@
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { config } from '../config/config';
+import { logger } from '../utils/logger';
+import path from 'path';
+import fs from 'fs';
+
+// ─── AWS S3 Client ────────────────────────────────────────────────────────────
+
+const isS3Configured = (): boolean => {
+  const keyId = config.aws.accessKeyId;
+  const secret = config.aws.secretAccessKey;
+  return !!(
+    keyId &&
+    secret &&
+    keyId !== 'mock_key' &&
+    keyId !== 'your_aws_access_key_id' &&
+    secret !== 'mock_secret' &&
+    secret !== 'your_aws_secret_access_key'
+  );
+};
+
+const s3Client = new S3Client({
+  region: config.aws.region,
+  credentials: {
+    accessKeyId: config.aws.accessKeyId,
+    secretAccessKey: config.aws.secretAccessKey,
+  },
+});
+
+const BUCKET = config.aws.s3BucketName;
+
+// Local fallback storage directory
+const LOCAL_UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+
+const ensureLocalDir = (subDir: string): string => {
+  const dir = path.join(LOCAL_UPLOAD_DIR, subDir);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
+};
+
+// ─── S3 Service with Local Fallback ──────────────────────────────────────────
+
+export const s3Service = {
+  /**
+   * Upload a file buffer to S3, or save locally if S3 is not configured
+   */
+  async uploadFile(
+    key: string,
+    buffer: Buffer,
+    mimeType: string
+  ): Promise<string> {
+    if (!isS3Configured()) {
+      // Local fallback
+      const [folder, filename] = key.split('/');
+      const dir = ensureLocalDir(folder);
+      const filepath = path.join(dir, filename);
+      fs.writeFileSync(filepath, buffer);
+      const url = `/uploads/${key}`;
+      logger.info(`[LOCAL] File saved locally: ${filepath}`);
+      return url;
+    }
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: mimeType,
+      ServerSideEncryption: 'AES256',
+    });
+
+    await s3Client.send(command);
+    const url = `https://${BUCKET}.s3.${config.aws.region}.amazonaws.com/${key}`;
+    logger.info(`S3 upload successful: ${key}`);
+    return url;
+  },
+
+  /**
+   * Generate a pre-signed URL for temporary access (or local URL)
+   */
+  async getSignedUrl(key: string, expiresInSeconds = 3600): Promise<string> {
+    if (!isS3Configured()) {
+      return `/uploads/${key}`;
+    }
+    const command = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+    return getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
+  },
+
+  /**
+   * Delete a file from S3 (or locally)
+   */
+  async deleteFile(key: string): Promise<void> {
+    if (!isS3Configured()) {
+      const filepath = path.join(LOCAL_UPLOAD_DIR, key);
+      if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+      logger.info(`[LOCAL] File deleted: ${filepath}`);
+      return;
+    }
+    const command = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
+    await s3Client.send(command);
+    logger.info(`S3 delete successful: ${key}`);
+  },
+
+  /**
+   * Upload a PDF buffer to S3 and return the public URL
+   */
+  async uploadPdf(key: string, buffer: Buffer): Promise<string> {
+    return this.uploadFile(key, buffer, 'application/pdf');
+  },
+};

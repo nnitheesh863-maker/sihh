@@ -1,0 +1,136 @@
+// Prisma Schema – SIH26031 AI Onion Grading System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  FARMER
+  PROCUREMENT_OFFICER
+  ADMIN
+}
+
+enum Grade {
+  A
+  B
+  C
+  REJECTED
+}
+
+enum FreshnessLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum DamageLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RecommendationStatus {
+  ACCEPT
+  CONDITIONAL_ACCEPT
+  REJECT
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  email     String   @unique
+  password  String
+  role      Role     @default(FARMER)
+  village   String?
+  district  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  analyses     OnionAnalysis[]
+  certificates Certificate[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model OnionAnalysis {
+  id                 String               @id @default(uuid())
+  userId             String
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl           String
+  processedImageUrl  String?
+  grade              Grade
+  score              Float
+  size               String
+  freshness          FreshnessLevel
+  damageLevel        DamageLevel
+  recommendation     RecommendationStatus
+  aiModelVersion     String               @default("1.0.0")
+  processingTimeMs   Int?
+  createdAt          DateTime             @default(now())
+
+  defects     Defect[]
+  certificate Certificate?
+
+  @@map("onion_analyses")
+}
+
+model Defect {
+  id            String        @id @default(uuid())
+  analysisId    String
+  analysis      OnionAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  defectType    String
+  confidence    Float
+  areaPercentage Float?
+  createdAt     DateTime      @default(now())
+
+  @@map("defects")
+}
+
+model ProcurementCenter {
+  id        String   @id @default(uuid())
+  name      String
+  district  String
+  latitude  Float
+  longitude Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("procurement_centers")
+}
+
+model Certificate {
+  id                String        @id @default(uuid())
+  analysisId        String        @unique
+  analysis          OnionAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+  certificateNumber String        @unique
+  qrCode            String?
+  pdfUrl            String?
+  issuedAt          DateTime      @default(now())
+
+  @@map("certificates")
+}

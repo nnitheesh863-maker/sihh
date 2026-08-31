@@ -1,0 +1,9 @@
+# SIH26031 Backend
+node_modules/
+dist/
+.env
+uploads/
+logs/
+*.log
+.DS_Store
+coverage/
