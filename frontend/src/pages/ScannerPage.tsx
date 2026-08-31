@@ -56,11 +56,11 @@ export const ScannerPage: React.FC = () => {
     if (!selectedFile && !previewUrl) return;
 
     setIsScanning(true);
-    setScanStage('OpenCV Contrast & Background Processing...');
+    setScanStage('Analyzing image quality...');
 
     try {
-      setTimeout(() => setScanStage('YOLO11n Pathogen & Lesion Detection...'), 600);
-      setTimeout(() => setScanStage('Agronomic Severity & Treatment Analysis...'), 1200);
+      setTimeout(() => setScanStage('Scanning for diseases...'), 600);
+      setTimeout(() => setScanStage('Generating treatment advice...'), 1200);
 
       let fileToUpload = selectedFile;
       if (!fileToUpload && previewUrl) {
@@ -78,7 +78,7 @@ export const ScannerPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Scan failed', err);
-      alert('Analysis failed: ' + (err.response?.data?.message || err.message || 'Error communicating with AI backend'));
+      alert('Analysis failed: ' + (err.response?.data?.message || err.message || 'Error communicating with server'));
     } finally {
       setIsScanning(false);
     }
@@ -98,19 +98,19 @@ export const ScannerPage: React.FC = () => {
       )}
 
       {/* Hero Banner */}
-      <div className="p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/40 border border-slate-800 relative overflow-hidden">
+      <div className="p-8 rounded-3xl bg-gradient-to-r from-emerald-900 to-emerald-950 border border-emerald-900 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
         
         <div className="max-w-3xl space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="h-3.5 w-3.5" />
-            YOLO11n AI Disease & Quality Inspection
+            Smart Onion Scanner
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            AI-Powered Onion Quality Assessment Engine
+            Check Your Crop Health Instantly
           </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Upload or capture an onion bulb photo for instant computer vision grading (Grades A/B/C/REJECTED), pathogen bounding box localization, and targeted fungicide spray recommendations.
+          <p className="text-sm text-emerald-100/70 leading-relaxed">
+            Take a photo of your onion to check for diseases. Get an instant quality grade and expert advice on how to treat your crop.
           </p>
         </div>
       </div>
@@ -177,7 +177,7 @@ export const ScannerPage: React.FC = () => {
                   className="flex-1 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                 >
                   <Sparkles className="h-4 w-4" />
-                  {analysisResult ? 'Re-Analyze Image' : 'Run YOLO11n AI Scan'}
+                  {analysisResult ? 'Scan Another Image' : 'Scan Onion Now'}
                 </button>
 
                 <button
@@ -195,7 +195,7 @@ export const ScannerPage: React.FC = () => {
           <div className="p-4 rounded-2xl glass-card border border-slate-800 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
               <ImageIcon className="h-4 w-4 text-emerald-400" />
-              Instant Sample Images (Click to Test)
+              Try with a sample image
             </div>
             <div className="grid grid-cols-3 gap-2">
               {SAMPLE_IMAGES.map((sample, idx) => (
@@ -206,7 +206,7 @@ export const ScannerPage: React.FC = () => {
                 >
                   <img src={sample.url} alt={sample.name} className="h-20 w-full object-cover group-hover:scale-105 transition-transform" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-2 flex items-end">
-                    <span className="text-[10px] font-semibold text-slate-200 truncate">{sample.name}</span>
+                    <span className="text-[10px] font-semibold text-slate-200 truncate">{sample.name.split(':')[1] || sample.name}</span>
                   </div>
                 </button>
               ))}
@@ -250,7 +250,7 @@ export const ScannerPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-white">Grade {analysisResult.grade} Quality</h3>
-                      <p className="text-xs text-slate-400">APMC Recommendation: <strong className="text-emerald-400">{analysisResult.recommendation}</strong></p>
+                      <p className="text-xs text-slate-400">Recommendation: <strong className="text-emerald-400">{analysisResult.recommendation}</strong></p>
                     </div>
                   </div>
 
@@ -291,9 +291,9 @@ export const ScannerPage: React.FC = () => {
               <div className="h-16 w-16 rounded-2xl bg-slate-900 text-slate-500 flex items-center justify-center mx-auto border border-slate-800">
                 <Info className="h-8 w-8" />
               </div>
-              <h3 className="text-base font-bold text-white">Awaiting Onion Image Scan</h3>
+              <h3 className="text-base font-bold text-white">Ready for Scan</h3>
               <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-                Upload a photo or choose a sample image to view real-time YOLO11n disease detection, bounding box overlays, and fungicide spray recommendations.
+                Upload a photo or choose a sample image to see disease detection and get treatment recommendations instantly.
               </p>
             </div>
           )}

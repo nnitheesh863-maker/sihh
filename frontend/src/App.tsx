@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
-import { LoginPage } from './pages/LoginPage';
+import { LandingPage } from './pages/LandingPage';
 import { ScannerPage } from './pages/ScannerPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { APMCCentersPage } from './pages/APMCCentersPage';
@@ -9,19 +9,29 @@ import { OfficerDashboard } from './pages/OfficerDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 
 const MainContent: React.FC = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('scanner');
+
+  // Since we use state-based routing, ensure the URL stays clean (e.g. clear '/login' from the address bar)
+  useEffect(() => {
+    if (window.location.pathname !== '/') {
+      window.history.replaceState(null, '', '/');
+    }
+  }, []);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm font-semibold">
-        Loading SIH26031 Platform...
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm font-semibold">Loading OnionAI Platform...</p>
+        </div>
       </div>
     );
   }
 
-  if (!isAuthenticated || activeTab === 'login') {
-    return <LoginPage onSuccess={() => setActiveTab('scanner')} />;
+  if (!isAuthenticated) {
+    return <LandingPage onEnterApp={() => setActiveTab('scanner')} />;
   }
 
   return (

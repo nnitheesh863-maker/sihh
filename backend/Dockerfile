@@ -36,6 +36,9 @@ COPY prisma.config.ts ./
 
 RUN mkdir -p logs uploads
 
+# Create uploads directory and set permissions
+RUN mkdir -p /app/uploads/originals /app/uploads/results && chown -R appuser:appgroup /app/uploads
+
 # Non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
