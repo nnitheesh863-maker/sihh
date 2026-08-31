@@ -1,5 +1,7 @@
 import { defineConfig } from 'prisma/config';
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 // ─── Prisma v7 Configuration ───────────────────────────────────────────────
 // Prisma v7: connection URL and adapter are configured here, NOT in schema.prisma

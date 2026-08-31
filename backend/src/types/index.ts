@@ -18,16 +18,38 @@ export interface AiDefect {
   bbox?: BoundingBox;
 }
 
+export interface OnionAnalysis {
+  id: string;
+  bbox: BoundingBox;
+  size: string;
+  qualityClass: string;
+  disease?: string;
+  diseaseConfidence: number;
+  severity: string;
+  grade: string;
+}
+
+export interface BatchQualityReport {
+  totalOnions: number;
+  healthyCount: number;
+  damagedCount: number;
+  rottenCount: number;
+  sproutedCount: number;
+  undersizedCount: number;
+  gradeAPercentage: number;
+  ursPercentage: number;
+  qualityScore: number;
+  primaryDiseaseDetected?: string;
+  overallRiskLevel: string;
+  recommendations: string[];
+}
+
 export interface AiPredictionResponse {
-  grade: 'A' | 'B' | 'C' | 'REJECTED';
-  score: number;            // 0–100
-  size: string;             // 'Small' | 'Medium' | 'Large'
-  freshness: 'HIGH' | 'MEDIUM' | 'LOW';
-  damage: 'LOW' | 'MEDIUM' | 'HIGH';
-  recommendation: 'ACCEPT' | 'CONDITIONAL_ACCEPT' | 'REJECT';
-  defects: AiDefect[];
-  processedImage: string;  // S3 URL or base64
-  modelVersion: string;
+  qualityGatePassed: boolean;
+  qualityGateMessage: string;
+  batchReport?: BatchQualityReport;
+  onions: OnionAnalysis[];
+  processedImage?: string;
   processingTimeMs: number;
 }
 

@@ -46,6 +46,10 @@ export class AnalysisService {
       originalName
     );
 
+    if (!aiResult.qualityGatePassed || !aiResult.batchReport) {
+      throw new AppError(aiResult.qualityGateMessage || 'Image failed quality gate.', 400);
+    }
+
     // 3 – Upload processed image (returned from AI) if it is base64
     let processedImageUrl = aiResult.processedImage;
     if (processedImageUrl?.startsWith('data:')) {
@@ -59,38 +63,39 @@ export class AnalysisService {
       );
     }
 
-    // 4 – Persist analysis + defects to DB
+    // 4 – Persist analysis + defects to DB (mapping new AI response to old schema)
+    const grade = aiResult.batchReport.gradeAPercentage > 80 ? 'A' : aiResult.batchReport.gradeAPercentage > 50 ? 'B' : aiResult.batchReport.ursPercentage > 80 ? 'REJECTED' : 'C';
+    const score = aiResult.batchReport.qualityScore;
+    const recommendation = aiResult.batchReport.overallRiskLevel === 'High' ? 'REJECT' : aiResult.batchReport.overallRiskLevel === 'Medium' ? 'CONDITIONAL_ACCEPT' : 'ACCEPT';
+
     const analysis = await this.analysisRepo.create({
       userId,
       imageUrl,
       processedImageUrl,
-      grade: aiResult.grade,
-      score: aiResult.score,
-      size: aiResult.size,
-      freshness: aiResult.freshness,
-      damageLevel: aiResult.damage,
-      recommendation: aiResult.recommendation,
-      aiModelVersion: aiResult.modelVersion ?? 'YOLO11n-v2.0',
+      grade: grade,
+      score: score,
+      size: 'Mixed (Batch)',
+      freshness: aiResult.batchReport.rottenCount > 0 ? 'LOW' : 'HIGH',
+      damageLevel: aiResult.batchReport.damagedCount > 0 ? 'MEDIUM' : 'LOW',
+      recommendation: recommendation,
+      aiModelVersion: 'Multi-Stage-Pipeline-v3',
       processingTimeMs: aiResult.processingTimeMs,
-      defects: aiResult.defects.map((d) => ({
-        defectType: d.type,
-        diseaseName: d.diseaseName,
-        confidence: d.confidence,
-        areaPercentage: d.areaPercentage,
-        severity: d.severity,
-        treatment: d.treatment,
-        storageAdvice: d.storageAdvice,
-        xMin: d.bbox?.xMin,
-        yMin: d.bbox?.yMin,
-        xMax: d.bbox?.xMax,
-        yMax: d.bbox?.yMax,
+      defects: aiResult.onions.filter(o => o.disease).map((o) => ({
+        defectType: o.qualityClass,
+        diseaseName: o.disease,
+        confidence: o.diseaseConfidence,
+        severity: o.severity,
+        xMin: o.bbox.xMin,
+        yMin: o.bbox.yMin,
+        xMax: o.bbox.xMax,
+        yMax: o.bbox.yMax,
       })),
     });
 
     // 5 – Generate certificate
     const certificate = await this.generateCertificate(analysis.id, userId, analysis as any);
 
-    logger.info(`Analysis complete: grade=${aiResult.grade}, score=${aiResult.score}`, {
+    logger.info(`Analysis complete: grade=${grade}, score=${score}`, {
       analysisId: analysis.id,
       userId,
     });
@@ -98,14 +103,15 @@ export class AnalysisService {
     return {
       analysis,
       certificate,
-      grade: aiResult.grade,
-      score: aiResult.score,
-      size: aiResult.size,
-      freshness: aiResult.freshness,
-      damage: aiResult.damage,
-      recommendation: aiResult.recommendation,
+      grade: grade,
+      score: score,
+      size: 'Mixed (Batch)',
+      freshness: aiResult.batchReport.rottenCount > 0 ? 'LOW' : 'HIGH',
+      damage: aiResult.batchReport.damagedCount > 0 ? 'MEDIUM' : 'LOW',
+      recommendation: recommendation,
       processedImage: processedImageUrl,
-      defects: aiResult.defects,
+      defects: aiResult.onions, // Return the raw onions back to the frontend
+      batchReport: aiResult.batchReport,
       certificateUrl: certificate.pdfUrl,
     };
   }

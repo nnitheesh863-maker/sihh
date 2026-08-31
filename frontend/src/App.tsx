@@ -35,21 +35,23 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#eef6ef] text-slate-800 flex flex-col selection:bg-emerald-500 selection:text-white">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 pb-12">
-        {activeTab === 'scanner' && <ScannerPage />}
-        {activeTab === 'history' && <HistoryPage />}
-        {activeTab === 'centers' && <APMCCentersPage />}
-        {activeTab === 'officer' && <OfficerDashboard />}
-        {activeTab === 'admin' && <AdminDashboard />}
+      <main className="flex-1 pb-12 p-4 md:p-8">
+        <div className="max-w-[1600px] mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[85vh]">
+          {activeTab === 'scanner' && <ScannerPage />}
+          {activeTab === 'history' && <HistoryPage />}
+          {activeTab === 'centers' && <APMCCentersPage />}
+          {activeTab === 'officer' && <OfficerDashboard />}
+          {activeTab === 'admin' && <AdminDashboard />}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+      <footer className="bg-transparent py-4 text-center text-xs text-slate-500">
         <p>SIH26031 – AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
-        <p className="mt-1 text-[11px] text-slate-600">Built with React, Vite, TailwindCSS, Express, Prisma, YOLO11n Computer Vision.</p>
+        <p className="mt-1 text-[11px] text-slate-400">Built with React, Vite, TailwindCSS, Express, Prisma, YOLO11n Computer Vision.</p>
       </footer>
     </div>
   );

@@ -17,6 +17,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'FARMER' | 'PROCUREMENT_OFFICER' | 'ADMIN'>('FARMER');
+  const [village, setVillage] = useState('');
+  const [district, setDistrict] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +31,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
       if (mode === 'login') {
         await login(email, password);
       } else {
-        await register({ email, password, name, phone, role });
+        await register({ email, password, name, phone, role, village, district });
       }
       onSuccess();
       onClose();
@@ -59,8 +61,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
             <X className="w-5 h-5 text-white" />
           </button>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1">
+              <img src="/logo.png" alt="OnionAI Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-xl font-black">OnionAI</span>
           </div>
@@ -109,6 +111,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
                       onChange={e => setPhone(e.target.value)}
                       placeholder="9876543210"
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-3 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Village (Optional)</label>
+                    <input
+                      type="text"
+                      value={village}
+                      onChange={e => setVillage(e.target.value)}
+                      placeholder="E.g. Palakkad"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">District (Optional)</label>
+                    <input
+                      type="text"
+                      value={district}
+                      onChange={e => setDistrict(e.target.value)}
+                      placeholder="E.g. Nashik"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
                 </div>

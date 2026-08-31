@@ -2,36 +2,23 @@ import React, { useState } from 'react';
 import { onionApi } from '../api/onion.api';
 import { OnionAnalysis } from '../types';
 import { BoundingBoxViewer } from '../components/BoundingBoxViewer';
-import { TreatmentCard } from '../components/TreatmentCard';
-import { QualityCertificate } from '../components/QualityCertificate';
 import { LoadingOverlay } from '../components/LoadingOverlay';
-import { Upload, Sparkles, Award, ShieldCheck, Activity, RefreshCw, CheckCircle2, AlertTriangle, Info, Image as ImageIcon } from 'lucide-react';
+import { Upload, Sparkles, AlertTriangle, ArrowRight, Activity, Leaf, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-// Preloaded sample test images
 const SAMPLE_IMAGES = [
-  {
-    name: 'Sample 1: Purple Blotch Lesion',
-    url: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Sample 2: High Grade Onion',
-    url: 'https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    name: 'Sample 3: Neck Rot Defect',
-    url: 'https://images.unsplash.com/photo-1580196969807-cc4de06654be?auto=format&fit=crop&w=600&q=80',
-  },
+  { name: 'Purple Blotch', url: '/sample-1.jpg', status: 'completed' },
+  { name: 'High Grade', url: '/sample-2.jpg', status: 'to do' },
+  { name: 'Neck Rot', url: '/sample-3.jpg', status: 'in progress' },
+  { name: 'Fresh Batch', url: '/sample-4.jpg', status: 'completed' },
 ];
 
 export const ScannerPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanStage, setScanStage] = useState('Initializing YOLO11n Neural Net...');
-  const [analysisResult, setAnalysisResult] = useState<OnionAnalysis | null>(null);
-  const [selectedDefectIdx, setSelectedDefectIdx] = useState<number | null>(null);
-  const [showCertificate, setShowCertificate] = useState(false);
+  const [scanStage, setScanStage] = useState('Initializing Scanner...');
+  const [analysisResult, setAnalysisResult] = useState<any | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
   const handleFileChange = (file: File) => {
@@ -64,7 +51,6 @@ export const ScannerPage: React.FC = () => {
 
       let fileToUpload = selectedFile;
       if (!fileToUpload && previewUrl) {
-        // Fetch sample image as file
         const res = await fetch(previewUrl);
         const blob = await res.blob();
         fileToUpload = new File([blob], 'sample_onion.jpg', { type: 'image/jpeg' });
@@ -91,215 +77,246 @@ export const ScannerPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="space-y-6">
       {isScanning && <LoadingOverlay stage={scanStage} />}
-      {showCertificate && analysisResult && (
-        <QualityCertificate analysis={analysisResult} onClose={() => setShowCertificate(false)} />
-      )}
 
-      {/* Hero Banner */}
-      <div className="p-8 rounded-3xl bg-gradient-to-r from-emerald-900 to-emerald-950 border border-emerald-900 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        
-        <div className="max-w-3xl space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5" />
-            Smart Onion Scanner
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Check Your Crop Health Instantly
-          </h1>
-          <p className="text-sm text-emerald-100/70 leading-relaxed">
-            Take a photo of your onion to check for diseases. Get an instant quality grade and expert advice on how to treat your crop.
+      {/* Header Info */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2 pl-2">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Onion Crop Monitoring</h1>
+          <p className="text-sm font-medium text-slate-500 flex items-center gap-2 mt-1">
+            <span>{new Date().toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' })} scan day</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            <span>Batch Analysis Mode</span>
           </p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 text-rose-600 rounded-full border border-rose-100 text-xs font-bold uppercase tracking-widest shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          Live
         </div>
       </div>
 
-      {/* Main Grid Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Column: Upload & Image Inspection (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
+        {/* Left Column (Monitor & Samples) - 8 cols */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
           
-          {/* File Upload Dropzone */}
-          {!previewUrl ? (
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={handleDrop}
-              className={`p-8 rounded-3xl border-2 border-dashed text-center transition-all cursor-pointer glass-card ${
-                dragActive
-                  ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
-                  : 'border-slate-800 hover:border-emerald-500/40 hover:bg-slate-900/60'
-              }`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-                className="hidden"
-                id="onion-upload-input"
-              />
-              <label htmlFor="onion-upload-input" className="cursor-pointer space-y-4 block">
-                <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
-                  <Upload className="h-8 w-8" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Upload Onion Bulb Image</h3>
-                  <p className="text-xs text-slate-400 mt-1">Drag and drop JPEG, PNG or WebP image here, or click to browse</p>
-                </div>
-                <span className="inline-block px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all">
-                  Select File
-                </span>
-              </label>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Interactive Bounding Box Viewer or Base Preview */}
-              {analysisResult ? (
-                <BoundingBoxViewer
-                  imageUrl={analysisResult.processedImageUrl || previewUrl}
-                  defects={analysisResult.defects || []}
-                  selectedDefectIndex={selectedDefectIdx}
-                  onSelectDefect={setSelectedDefectIdx}
-                />
-              ) : (
-                <div className="relative rounded-2xl overflow-hidden glass-card border border-slate-800 p-2 flex items-center justify-center min-h-[320px]">
-                  <img src={previewUrl} alt="Onion Preview" className="max-w-full max-h-[400px] rounded-xl object-contain" />
-                </div>
-              )}
+          {/* Main Monitor View */}
+          <div className="relative rounded-[2rem] overflow-hidden bg-emerald-900 border border-emerald-800 shadow-xl min-h-[460px] flex items-center justify-center p-2 group">
+            
+            {/* Background Map / Abstract Pattern (shown if no preview) */}
+            {!previewUrl && (
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-emerald-900 to-black pointer-events-none" />
+            )}
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleScan}
-                  disabled={isScanning}
-                  className="flex-1 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  {analysisResult ? 'Scan Another Image' : 'Scan Onion Now'}
-                </button>
-
-                <button
-                  onClick={() => { setPreviewUrl(null); setSelectedFile(null); setAnalysisResult(null); }}
-                  className="px-4 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Clear
-                </button>
+            {!previewUrl ? (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={handleDrop}
+                className={`relative z-10 p-10 rounded-3xl text-center transition-all cursor-pointer ${
+                  dragActive ? 'scale-105 bg-emerald-800/40' : 'hover:bg-emerald-800/20'
+                }`}
+              >
+                <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])} className="hidden" id="onion-upload-input" />
+                <label htmlFor="onion-upload-input" className="cursor-pointer space-y-4 block">
+                  <div className="h-20 w-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto backdrop-blur-md border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                    <Upload className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Upload Batch Image</h3>
+                    <p className="text-xs text-emerald-200 mt-2 font-medium">Drag and drop or click to scan</p>
+                  </div>
+                </label>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="relative w-full h-full flex items-center justify-center rounded-[1.5rem] overflow-hidden bg-black/40">
+                {analysisResult ? (
+                  <BoundingBoxViewer
+                    imageUrl={analysisResult.processedImage || previewUrl}
+                    defects={analysisResult.defects || []}
+                    selectedDefectIndex={null}
+                    onSelectDefect={() => {}}
+                  />
+                ) : (
+                  <img src={previewUrl} alt="Preview" className="max-w-full max-h-[500px] object-contain rounded-xl shadow-2xl" />
+                )}
 
-          {/* Quick Demo Sample Images */}
-          <div className="p-4 rounded-2xl glass-card border border-slate-800 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-              <ImageIcon className="h-4 w-4 text-emerald-400" />
-              Try with a sample image
-            </div>
-            <div className="grid grid-cols-3 gap-2">
+                {/* Overlays simulating the TerraScan UI */}
+                {!analysisResult && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Targeting Crosshairs */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-[1px] border-emerald-400/50 rounded-full border-dashed animate-[spin_10s_linear_infinite]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-emerald-400/30 rounded-full" />
+                    
+                    {/* Fake scanning brackets */}
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 text-emerald-400 font-medium">
+                      <div className="w-4 h-6 border-l-2 border-b-2 border-emerald-400"></div>
+                      <span className="uppercase tracking-widest text-xs font-bold">Scanning...</span>
+                      <div className="w-4 h-6 border-r-2 border-b-2 border-emerald-400"></div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Floating Glass Pills */}
+                {analysisResult?.batchReport && (
+                  <>
+                    <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold flex items-center gap-2 shadow-lg">
+                      <Leaf className="w-3.5 h-3.5 text-emerald-400" /> Score: {analysisResult.score}/100
+                    </div>
+                    <div className="absolute top-6 right-6 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold flex items-center gap-2 shadow-lg">
+                      <Activity className="w-3.5 h-3.5 text-emerald-400" /> Grade: {analysisResult.grade}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Controls / Action Bar */}
+          <div className="flex items-center justify-between gap-4 px-2">
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {SAMPLE_IMAGES.map((sample, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSampleClick(sample.url)}
-                  className="group relative rounded-xl overflow-hidden border border-slate-800 hover:border-emerald-500/50 transition-all text-left"
+                  className="relative flex-shrink-0 w-36 h-24 rounded-2xl overflow-hidden border-2 border-transparent hover:border-emerald-500 transition-all shadow-sm group"
                 >
-                  <img src={sample.url} alt={sample.name} className="h-20 w-full object-cover group-hover:scale-105 transition-transform" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-2 flex items-end">
-                    <span className="text-[10px] font-semibold text-slate-200 truncate">{sample.name.split(':')[1] || sample.name}</span>
+                  <img src={sample.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-emerald-500/90 text-white text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm">
+                    {sample.status}
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 text-left">
+                    <p className="text-[10px] text-white font-semibold truncate">{sample.name}</p>
                   </div>
                 </button>
               ))}
             </div>
+
+            {previewUrl && !analysisResult && (
+              <button
+                onClick={handleScan}
+                disabled={isScanning}
+                className="flex-shrink-0 px-8 py-4 rounded-[1.5rem] bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-sm shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all"
+              >
+                <Sparkles className="h-5 w-5" />
+                Analyze Crop
+              </button>
+            )}
+            
+            {analysisResult && (
+              <button
+                onClick={() => { setPreviewUrl(null); setSelectedFile(null); setAnalysisResult(null); }}
+                className="flex-shrink-0 px-8 py-4 rounded-[1.5rem] bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition-all"
+              >
+                Scan New Batch
+              </button>
+            )}
           </div>
 
         </div>
 
-        {/* Right Column: Scorecard & Pathology Recommendations (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Column (Analytics & Recommendations) - 4 cols */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
           
-          {analysisResult ? (
-            <>
-              {/* Quality Score Card */}
-              <div className="p-6 rounded-3xl glass-card border border-slate-800 space-y-6">
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Assigned Grade</span>
-                  <button
-                    onClick={() => setShowCertificate(true)}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
-                  >
-                    <Award className="h-3.5 w-3.5" />
-                    Digital Certificate
-                  </button>
+          {/* Quality Breakdown Chart */}
+          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-800">Batch Quality Rate</h3>
+              <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 cursor-pointer">
+                <div className="space-y-1">
+                  <div className="w-3.5 h-0.5 bg-slate-400 rounded"></div>
+                  <div className="w-2.5 h-0.5 bg-slate-400 rounded"></div>
+                  <div className="w-3 h-0.5 bg-slate-400 rounded"></div>
                 </div>
-
-                {/* Grade & Score Badge */}
-                <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/80 border border-slate-800">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl font-black shadow-xl ${
-                        analysisResult.grade === 'A'
-                          ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20'
-                          : analysisResult.grade === 'B'
-                          ? 'bg-amber-500 text-slate-950 shadow-amber-500/20'
-                          : 'bg-rose-500 text-white shadow-rose-500/20'
-                      }`}
-                    >
-                      {analysisResult.grade}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-white">Grade {analysisResult.grade} Quality</h3>
-                      <p className="text-xs text-slate-400">Recommendation: <strong className="text-emerald-400">{analysisResult.recommendation}</strong></p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-3xl font-black text-white">{analysisResult.score}</span>
-                    <span className="text-xs text-slate-500">/100</span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Overall Index</p>
-                  </div>
-                </div>
-
-                {/* Key Metrics Grid */}
-                <div className="grid grid-cols-3 gap-3 text-center text-xs">
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="text-slate-400">Bulb Size</span>
-                    <p className="font-bold text-white">{analysisResult.size}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="text-slate-400">Freshness</span>
-                    <p className="font-bold text-emerald-400">{analysisResult.freshness}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="text-slate-400">Damage Level</span>
-                    <p className="font-bold text-amber-400">{analysisResult.damageLevel}</p>
-                  </div>
-                </div>
-
               </div>
-
-              {/* Treatment Recommendation Card */}
-              <TreatmentCard
-                defects={analysisResult.defects || []}
-                selectedIndex={selectedDefectIdx}
-                onSelectIndex={setSelectedDefectIdx}
-              />
-            </>
-          ) : (
-            <div className="p-8 rounded-3xl glass-card border border-slate-800 text-center space-y-4">
-              <div className="h-16 w-16 rounded-2xl bg-slate-900 text-slate-500 flex items-center justify-center mx-auto border border-slate-800">
-                <Info className="h-8 w-8" />
-              </div>
-              <h3 className="text-base font-bold text-white">Ready for Scan</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-                Upload a photo or choose a sample image to see disease detection and get treatment recommendations instantly.
-              </p>
             </div>
-          )}
+
+            {analysisResult?.batchReport ? (
+              <div className="flex items-end h-32 gap-3 mt-4">
+                {/* Fake Bar Chart based on real stats */}
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 group">
+                  <div className="w-full bg-emerald-400 rounded-t-lg rounded-b-sm transition-all group-hover:bg-emerald-500" style={{ height: `${Math.max(10, (analysisResult.batchReport.healthyCount / analysisResult.batchReport.totalOnions) * 100)}%` }}></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Healthy</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 group">
+                  <div className="w-full bg-slate-200 rounded-t-lg rounded-b-sm transition-all group-hover:bg-slate-300" style={{ height: `${Math.max(10, (analysisResult.batchReport.damagedCount / analysisResult.batchReport.totalOnions) * 100)}%` }}></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Damage</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 group">
+                  <div className="w-full bg-[#1b4332] rounded-t-lg rounded-b-sm transition-all" style={{ height: `${Math.max(10, (analysisResult.batchReport.rottenCount / analysisResult.batchReport.totalOnions) * 100)}%` }}></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Rot</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 group">
+                  <div className="w-full bg-emerald-200 rounded-t-lg rounded-b-sm transition-all" style={{ height: `${Math.max(10, (analysisResult.batchReport.undersizedCount / analysisResult.batchReport.totalOnions) * 100)}%` }}></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Size</span>
+                </div>
+              </div>
+            ) : (
+              <div className="h-32 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl">
+                <span className="text-xs font-semibold text-slate-400">Awaiting scan...</span>
+              </div>
+            )}
+          </div>
+
+          {/* AI Recommendations */}
+          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+            <h3 className="text-base font-bold text-slate-800">AI Recommendations</h3>
+            
+            <div className="flex flex-col gap-2 mt-2">
+              {analysisResult?.batchReport?.recommendations ? (
+                analysisResult.batchReport.recommendations.map((rec: string, idx: number) => (
+                  <div key={idx} className={`w-full p-4 rounded-[1.25rem] flex items-center justify-between text-xs font-bold cursor-pointer transition-transform hover:scale-[1.02] ${
+                    idx === 0 ? 'bg-[#1b4332] text-white shadow-lg shadow-[#1b4332]/20 z-30' : 
+                    idx === 1 ? 'bg-emerald-100 text-emerald-900 -mt-3 shadow-md z-20' : 
+                    'bg-slate-100 text-slate-700 -mt-3 shadow-sm z-10'
+                  }`}>
+                    <span className="flex-1 truncate pr-2">{rec}</span>
+                    <ArrowRight className="w-4 h-4 opacity-50 flex-shrink-0" />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="w-full p-4 rounded-[1.25rem] bg-slate-100/50 text-slate-400 flex items-center justify-between text-xs font-bold border border-slate-100 border-dashed">
+                    Upload an image to get recommendations
+                    <ArrowRight className="w-4 h-4 opacity-50" />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Efficiency / Grading Score */}
+          <div className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-4">
+            <h3 className="text-base font-bold text-slate-800">Quality Index</h3>
+            
+            {analysisResult?.batchReport ? (
+              <div className="flex items-center justify-between mt-2">
+                <div>
+                  <p className="text-4xl font-black text-slate-800">{analysisResult.batchReport.gradeAPercentage}%</p>
+                  <p className="text-xs font-bold text-emerald-500 uppercase tracking-wide mt-1">Grade A Yield</p>
+                </div>
+                
+                <div className="relative w-20 h-20">
+                  {/* Circular progress simulating the chart */}
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                    <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={`${analysisResult.batchReport.gradeAPercentage * 2.26} 226`} className="text-[#1b4332] transition-all duration-1000 ease-out" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Avg</span>
+                    <span className="text-sm font-black text-slate-800">{analysisResult.batchReport.qualityScore}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-20 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl">
+                <span className="text-xs font-semibold text-slate-400">No data</span>
+              </div>
+            )}
+          </div>
 
         </div>
-
       </div>
     </div>
   );
