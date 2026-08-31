@@ -27,7 +27,19 @@ export class AnalysisRepository {
     recommendation: RecommendationStatus;
     aiModelVersion?: string;
     processingTimeMs?: number;
-    defects: { defectType: string; confidence: number; areaPercentage?: number }[];
+    defects: {
+      defectType: string;
+      diseaseName?: string;
+      confidence: number;
+      areaPercentage?: number;
+      severity?: string;
+      treatment?: string;
+      storageAdvice?: string;
+      xMin?: number;
+      yMin?: number;
+      xMax?: number;
+      yMax?: number;
+    }[];
   }) {
     const { defects, ...analysisData } = data;
     return this.prisma.onionAnalysis.create({
@@ -36,8 +48,16 @@ export class AnalysisRepository {
         defects: {
           create: defects.map((d) => ({
             defectType: d.defectType,
+            diseaseName: d.diseaseName,
             confidence: d.confidence,
             areaPercentage: d.areaPercentage,
+            severity: d.severity,
+            treatment: d.treatment,
+            storageAdvice: d.storageAdvice,
+            xMin: d.xMin,
+            yMin: d.yMin,
+            xMax: d.xMax,
+            yMax: d.yMax,
           })),
         },
       },

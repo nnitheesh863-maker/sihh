@@ -70,12 +70,20 @@ export class AnalysisService {
       freshness: aiResult.freshness,
       damageLevel: aiResult.damage,
       recommendation: aiResult.recommendation,
-      aiModelVersion: aiResult.modelVersion ?? '1.0.0',
+      aiModelVersion: aiResult.modelVersion ?? 'YOLO11n-v2.0',
       processingTimeMs: aiResult.processingTimeMs,
       defects: aiResult.defects.map((d) => ({
         defectType: d.type,
+        diseaseName: d.diseaseName,
         confidence: d.confidence,
         areaPercentage: d.areaPercentage,
+        severity: d.severity,
+        treatment: d.treatment,
+        storageAdvice: d.storageAdvice,
+        xMin: d.bbox?.xMin,
+        yMin: d.bbox?.yMin,
+        xMax: d.bbox?.xMax,
+        yMax: d.bbox?.yMax,
       })),
     });
 

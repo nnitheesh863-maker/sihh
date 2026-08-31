@@ -1,9 +1,21 @@
 // ─── AI Service Types ─────────────────────────────────────────────────────────
 
+export interface BoundingBox {
+  xMin: number;
+  yMin: number;
+  xMax: number;
+  yMax: number;
+}
+
 export interface AiDefect {
   type: string;
+  diseaseName?: string;
   confidence: number;
   areaPercentage?: number;
+  severity?: string;
+  treatment?: string;
+  storageAdvice?: string;
+  bbox?: BoundingBox;
 }
 
 export interface AiPredictionResponse {
