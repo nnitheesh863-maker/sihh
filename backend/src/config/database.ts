@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { config } from './env';
 import { logger } from '../utils/logger';
 
 // ─── Singleton Prisma Client with pg Adapter (Prisma v7) ──────────────────────
@@ -10,7 +11,7 @@ let prisma: PrismaClient;
 export const getPrismaClient = (): PrismaClient => {
   if (!prisma) {
     const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: config.database.url,
     });
 
     const adapter = new PrismaPg(pool);

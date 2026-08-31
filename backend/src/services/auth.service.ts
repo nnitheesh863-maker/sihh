@@ -1,13 +1,11 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/config';
+import { config } from '../config/env';
 import { UserRepository } from '../repositories/user.repository';
-import { ConflictError, AuthenticationError, NotFoundError } from '../utils/errors';
+import { ConflictError, AuthenticationError } from '../utils/errors';
 import { TokenPair, AuthenticatedUser } from '../types';
-import { RegisterInput, LoginInput } from '../validators/schemas';
+import { RegisterInput, LoginInput } from '../validators/auth.validator';
 import { logger } from '../utils/logger';
-
-// ─── Auth Service ─────────────────────────────────────────────────────────────
 
 export class AuthService {
   private userRepo: UserRepository;
@@ -16,20 +14,15 @@ export class AuthService {
     this.userRepo = new UserRepository();
   }
 
-  // ── Register ───────────────────────────────────────────────────────────────
-
   async register(input: RegisterInput): Promise<{ user: AuthenticatedUser; tokens: TokenPair }> {
-    // Check uniqueness
     const existingEmail = await this.userRepo.findByEmail(input.email);
     if (existingEmail) throw new ConflictError('Email already registered');
 
     const existingPhone = await this.userRepo.findByPhone(input.phone);
     if (existingPhone) throw new ConflictError('Phone number already registered');
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(input.password, 12);
 
-    // Create user
     const user = await this.userRepo.create({
       ...input,
       password: hashedPassword,
@@ -37,7 +30,6 @@ export class AuthService {
 
     logger.info(`User registered: ${user.email}`, { userId: user.id, role: user.role });
 
-    // Generate tokens
     const tokens = this.generateTokenPair({ userId: user.id, role: user.role, email: user.email });
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
@@ -46,8 +38,6 @@ export class AuthService {
       tokens,
     };
   }
-
-  // ── Login ──────────────────────────────────────────────────────────────────
 
   async login(input: LoginInput): Promise<{ user: AuthenticatedUser; tokens: TokenPair }> {
     const user = await this.userRepo.findByEmail(input.email);
@@ -66,8 +56,6 @@ export class AuthService {
     return { user: this.sanitizeUser(user), tokens };
   }
 
-  // ── Refresh ────────────────────────────────────────────────────────────────
-
   async refreshTokens(refreshToken: string): Promise<TokenPair> {
     const tokenRecord = await this.userRepo.findRefreshToken(refreshToken);
     if (!tokenRecord) throw new AuthenticationError('Invalid refresh token');
@@ -84,7 +72,6 @@ export class AuthService {
         email: string;
       };
 
-      // Rotate refresh token
       await this.userRepo.deleteRefreshToken(refreshToken);
       const tokens = this.generateTokenPair(payload);
       await this.saveRefreshToken(payload.userId, tokens.refreshToken);
@@ -96,17 +83,13 @@ export class AuthService {
     }
   }
 
-  // ── Logout ─────────────────────────────────────────────────────────────────
-
   async logout(refreshToken: string): Promise<void> {
     try {
       await this.userRepo.deleteRefreshToken(refreshToken);
     } catch {
-      // Token may already be expired/deleted, that's fine
+      // Ignore if token already revoked
     }
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   private generateTokenPair(payload: {
     userId: string;
@@ -125,7 +108,7 @@ export class AuthService {
   }
 
   private async saveRefreshToken(userId: string, token: string): Promise<void> {
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await this.userRepo.saveRefreshToken(userId, token, expiresAt);
   }
 
