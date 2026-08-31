@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import random
 import base64
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -140,7 +140,7 @@ def run_multi_stage_pipeline(img: np.ndarray) -> tuple[List[dict], str]:
     
     return onions, processed_image
 
-def generate_batch_report(onions: List[dict]) -> dict:
+def generate_batch_report(onions: List[dict], context: dict = None) -> dict:
     total = len(onions)
     healthy = sum(1 for o in onions if o["qualityClass"] == "Healthy")
     damaged = sum(1 for o in onions if o["qualityClass"] == "Damaged")
@@ -157,16 +157,38 @@ def generate_batch_report(onions: List[dict]) -> dict:
     diseases_found = [o["disease"] for o in onions if o["disease"] and o["disease"] != "Uncertain Result"]
     primary_disease = diseases_found[0] if diseases_found else None
     
-    risk = "High" if rotten > 0 or diseases_found else "Medium" if damaged > 0 else "Low"
+    # Calculate visual risk
+    visual_risk = "High" if rotten > 0 or diseases_found else "Medium" if damaged > 0 else "Low"
+    
+    # Calculate environmental risk
+    env_risk = "Low"
+    if context:
+        stage = context.get('cropStage', '')
+        rainfall = context.get('rainfall', '')
+        if rainfall == 'High (Recent)' and stage == 'Growing (Field)':
+            env_risk = "High"
+        elif rainfall == 'High (Recent)' or stage == 'Storage (1+ Month)':
+            env_risk = "Medium"
+    
+    # Overall risk combination
+    risk_map = {"Low": 0, "Medium": 1, "High": 2}
+    max_risk = max(risk_map[visual_risk], risk_map[env_risk])
+    risk = ["Low", "Medium", "High"][max_risk]
     
     recs = []
     if primary_disease:
-        recs.append(f"Separate onions affected by {primary_disease}.")
+        recs.append(f"🔴 HIGH PRIORITY: Separate onions affected by {primary_disease} immediately.")
     if rotten > 0:
-        recs.append("Remove visibly rotten material immediately.")
+        recs.append("🔴 HIGH PRIORITY: Remove visibly rotten material to prevent spreading.")
+    
+    if env_risk == "High" or env_risk == "Medium":
+        recs.append("Management: Reduce excess moisture and improve ventilation.")
+    
     if risk == "High":
-        recs.append("Improve storage ventilation and monitor remaining batch closely.")
+        recs.append("When to consult an expert: If symptoms continue spreading, consult a qualified agricultural expert.")
+        
     if not recs:
+        recs.append("Prevention: Maintain appropriate storage conditions and inspect batches regularly.")
         recs.append("Batch looks good. Store in cool, dry conditions.")
         
     return {
@@ -187,7 +209,7 @@ def generate_batch_report(onions: List[dict]) -> dict:
 # ── API Endpoint ──────────────────────────────────────────────────────────────
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(image: UploadFile = File(...)):
+async def predict(image: UploadFile = File(...), context: Optional[str] = Form(None)):
     start_time = time.time()
     try:
         img_bytes = await image.read()
@@ -198,6 +220,15 @@ async def predict(image: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Decode error: {e}")
         raise HTTPException(status_code=400, detail="Invalid image format")
+
+    # Parse context
+    context_data = None
+    if context:
+        import json
+        try:
+            context_data = json.loads(context)
+        except Exception:
+            pass
 
     # Gate
     passed, msg = check_image_quality(img)
@@ -210,7 +241,7 @@ async def predict(image: UploadFile = File(...)):
 
     # Pipeline
     onions, processed_image = run_multi_stage_pipeline(img)
-    report = generate_batch_report(onions)
+    report = generate_batch_report(onions, context_data)
 
     return PredictionResponse(
         qualityGatePassed=True,

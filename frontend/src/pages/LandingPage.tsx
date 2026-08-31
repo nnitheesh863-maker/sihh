@@ -44,9 +44,9 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-green-600 rounded-lg flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-auto flex items-center justify-center">
+              <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain scale-110" />
             </div>
             <span className="text-xl font-black text-gray-900">Onion<span className="text-green-600">AI</span></span>
           </div>
@@ -321,9 +321,9 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
 
       {/* ── FOOTER ─────────────────────────────────────────────────────── */}
       <footer className="bg-gray-950 py-8 text-center border-t border-gray-800">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-7 h-7 bg-green-600 rounded-md flex items-center justify-center">
-            <Leaf className="w-4 h-4 text-white" />
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="h-8 w-auto flex items-center justify-center grayscale brightness-200">
+            <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain" />
           </div>
           <span className="text-white font-black text-lg">Onion<span className="text-green-500">AI</span></span>
         </div>

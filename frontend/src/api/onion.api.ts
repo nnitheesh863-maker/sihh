@@ -2,9 +2,10 @@ import { apiClient } from './client';
 import { OnionAnalysis, ApiResponse, Certificate } from '../types';
 
 export const onionApi = {
-  analyzeImage: async (file: File): Promise<OnionAnalysis> => {
+  analyzeImage: async (file: File, context?: any): Promise<OnionAnalysis> => {
     const formData = new FormData();
     formData.append('image', file);
+    if (context) formData.append('context', JSON.stringify(context));
 
     const res = await apiClient.post<ApiResponse<OnionAnalysis>>('/onions/analyze', formData, {
       headers: {

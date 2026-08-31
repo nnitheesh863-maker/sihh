@@ -49,11 +49,21 @@ export const analyzeOnion = async (
       size: req.file.size,
     });
 
+    let contextData = null;
+    if (req.body.context) {
+      try {
+        contextData = JSON.parse(req.body.context);
+      } catch (e) {
+        logger.warn('Failed to parse context data', { error: e });
+      }
+    }
+
     const result = await analysisService.analyzeOnion(
       userId,
       req.file.buffer,
       req.file.mimetype,
-      req.file.originalname
+      req.file.originalname,
+      contextData
     );
 
     res.status(201).json(successResponse(result, 'Onion graded successfully'));

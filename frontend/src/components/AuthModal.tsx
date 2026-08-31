@@ -61,10 +61,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
             <X className="w-5 h-5 text-white" />
           </button>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1">
-              <img src="/logo.png" alt="OnionAI Logo" className="w-full h-full object-contain" />
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center p-2 shadow-sm">
+              <img src="/logo.png" alt="OnionAI Logo" className="w-full h-full object-contain scale-110" />
             </div>
-            <span className="text-xl font-black">OnionAI</span>
+            <span className="text-2xl font-black">OnionAI</span>
           </div>
           <h2 className="text-2xl font-black">
             {mode === 'login' ? 'Welcome back!' : 'Create your account'}

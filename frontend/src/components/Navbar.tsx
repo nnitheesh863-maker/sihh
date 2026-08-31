@@ -16,8 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         
         {/* Logo & Brand */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('scanner')}>
-          <div className="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden">
-            <img src="/logo.png" alt="OnionAI Logo" className="w-full h-full object-cover" />
+          <div className="h-12 w-auto flex items-center justify-center">
+            <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain scale-110" />
           </div>
           <span className="font-bold text-lg text-slate-800 tracking-tight">OnionAI</span>
         </div>

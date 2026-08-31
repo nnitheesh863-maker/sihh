@@ -32,7 +32,8 @@ export class AnalysisService {
     userId: string,
     fileBuffer: Buffer,
     mimeType: string,
-    originalName: string
+    originalName: string,
+    contextData: any = null
   ) {
     // 1 – Upload original image to S3
     const s3Key = generateS3Key('originals', originalName);
@@ -43,7 +44,8 @@ export class AnalysisService {
     const aiResult: AiPredictionResponse = await aiService.predict(
       fileBuffer,
       mimeType,
-      originalName
+      originalName,
+      contextData
     );
 
     if (!aiResult.qualityGatePassed || !aiResult.batchReport) {

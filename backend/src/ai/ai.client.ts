@@ -73,13 +73,17 @@ export const aiService = {
   async predict(
     imageBuffer: Buffer,
     mimeType: string,
-    originalName: string
+    originalName: string,
+    contextData?: any
   ): Promise<AiPredictionResponse> {
     const formData = new FormData();
     formData.append('image', imageBuffer, {
       filename: originalName,
       contentType: mimeType,
     });
+    if (contextData) {
+      formData.append('context', JSON.stringify(contextData));
+    }
 
     try {
       const startTime = Date.now();
