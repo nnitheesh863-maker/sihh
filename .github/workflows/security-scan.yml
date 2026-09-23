@@ -1,0 +1,21 @@
+name: Security & Vulnerability Scan
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: NPM Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Backend audit
+        run: cd backend && npm audit --audit-level=high || true
+      - name: Frontend audit
+        run: cd frontend && npm audit --audit-level=high || true
