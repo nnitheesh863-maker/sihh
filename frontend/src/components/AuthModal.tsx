@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Phone, Leaf, ArrowRight, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 // Animation variants
-const modalVariants = {
+const modalVariants: Variants = {
   hidden: { opacity: 0, scale: 0.96 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
   exit: { opacity: 0, scale: 0.96, transition: { duration: 0.15 } }
 };
 
-const formStagger = {
+const formStagger: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
-const fieldVariants = {
+const fieldVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
 };
 
-const errorShake = {
+const errorShake: Variants = {
   shake: { x: [-4, 4, -3, 3, 0], transition: { duration: 0.3 } }
 };
 
@@ -64,11 +64,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
       }, 1000);
     } catch (err: any) {
       const data = err?.response?.data;
-      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+      if (data?.error?.details && Array.isArray(data.error.details) && data.error.details.length > 0) {
         // Display the first validation error message explicitly
-        setError(data.errors[0].message || data.errors[0]);
+        setError(data.error.details[0].message || data.error.details[0]);
       } else {
-        setError(data?.message || err?.message || 'Authentication failed. Please check your credentials.');
+        setError(data?.error?.message || data?.message || err?.message || 'Authentication failed. Please check your credentials.');
       }
     } finally {
       setLoading(false);

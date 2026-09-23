@@ -8,8 +8,11 @@ export interface ApiSuccessResponse<T = unknown> {
 
 export interface ApiErrorResponse {
   success: false;
-  message: string;
-  errors?: unknown[];
+  error: {
+    code: string;
+    message: string;
+    details?: unknown[];
+  };
 }
 
 export const successResponse = <T>(
@@ -23,9 +26,13 @@ export const successResponse = <T>(
 
 export const errorResponse = (
   message: string,
-  errors?: unknown[]
+  code: string = 'INTERNAL_ERROR',
+  details?: unknown[]
 ): ApiErrorResponse => ({
   success: false,
-  message,
-  ...(errors ? { errors } : {}),
+  error: {
+    code,
+    message,
+    ...(details ? { details } : {}),
+  },
 });

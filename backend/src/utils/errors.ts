@@ -54,3 +54,12 @@ export class ConflictError extends AppError {
     this.name = 'ConflictError';
   }
 }
+
+export class AIServiceError extends AppError {
+  public code: string;
+  constructor(message: string = 'AI service is temporarily unavailable', code: string = 'AI_SERVICE_UNAVAILABLE') {
+    super(message, 503);
+    this.name = 'AIServiceError';
+    this.code = code;
+  }
+}

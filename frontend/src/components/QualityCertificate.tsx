@@ -12,18 +12,43 @@ interface QualityCertificateProps {
 export const QualityCertificate: React.FC<QualityCertificateProps> = ({ analysis, onClose }) => {
   const certRef = useRef<HTMLDivElement | null>(null);
 
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
   const handleDownloadPdf = async () => {
-    if (!certRef.current) return;
     try {
-      const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Onion-Certificate-${analysis.id.slice(0, 8)}.pdf`);
+      setIsDownloading(true);
+      
+      // Import apiClient dynamically to avoid circular dependencies if any, 
+      // or just assume it is exported from '../api/client'
+      const { apiClient } = await import('../api/client');
+      
+      const res = await apiClient.get(`/certificate/${analysis.id}/pdf`, {
+        responseType: 'blob',
+      });
+      
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Onion-Certificate-${analysis.id.slice(0, 8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('PDF export failed', err);
+      console.error('PDF export failed via API, falling back to local canvas...', err);
+      // Fallback to html2canvas if backend fails
+      if (certRef.current) {
+        const canvas = await html2canvas(certRef.current, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`Onion-Certificate-${analysis.id.slice(0, 8)}.pdf`);
+      }
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -42,10 +67,15 @@ export const QualityCertificate: React.FC<QualityCertificateProps> = ({ analysis
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadPdf}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-md shadow-emerald-500/20"
+              disabled={isDownloading}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md ${
+                isDownloading 
+                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed' 
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
+              }`}
             >
-              <Download className="h-4 w-4" />
-              Download PDF
+              <Download className={`h-4 w-4 ${isDownloading ? 'animate-bounce' : ''}`} />
+              {isDownloading ? 'Downloading...' : 'Download PDF'}
             </button>
             <button
               onClick={onClose}

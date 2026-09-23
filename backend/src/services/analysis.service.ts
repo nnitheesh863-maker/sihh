@@ -82,7 +82,7 @@ export class AnalysisService {
       recommendation: recommendation,
       aiModelVersion: 'Multi-Stage-Pipeline-v3',
       processingTimeMs: aiResult.processingTimeMs,
-      defects: aiResult.onions.filter(o => o.disease).map((o) => ({
+      defects: (aiResult.onions || []).filter(o => o.disease).map((o) => ({
         defectType: o.qualityClass,
         diseaseName: o.disease,
         confidence: o.diseaseConfidence,

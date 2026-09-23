@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { onionApi } from '../api/onion.api';
+import { detectionApi } from '../api/detection.api';
 import { OnionAnalysis } from '../types';
 import { QualityCertificate } from '../components/QualityCertificate';
 import { History, Filter, Search, Award, Calendar, CheckCircle2, ShieldAlert, ArrowRight } from 'lucide-react';
@@ -18,7 +18,7 @@ export const HistoryPage: React.FC = () => {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const data = await onionApi.getHistory(1, 50);
+      const data = await detectionApi.getHistory(1, 50);
       setHistory(data.items || []);
     } catch (err) {
       console.error('Failed to fetch history', err);

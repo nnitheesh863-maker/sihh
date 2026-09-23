@@ -20,30 +20,35 @@ export const errorHandler = (
   });
 
   if (err instanceof AppError) {
+    const code = (err as any).code || err.name.replace('Error', '').toUpperCase() + '_ERROR';
     res.status(err.statusCode).json(
-      errorResponse(err.message, err.errors)
+      errorResponse(err.message, code, err.errors)
     );
     return;
   }
 
   if (err.name === 'PrismaClientKnownRequestError') {
-    const prismaErr = err as unknown as { code: string };
+    const prismaErr = err as unknown as { code: string; message: string };
     if (prismaErr.code === 'P2002') {
-      res.status(409).json(errorResponse('A record with this value already exists'));
+      res.status(409).json(errorResponse('A record with this value already exists', 'DATABASE_CONFLICT_ERROR'));
       return;
     }
     if (prismaErr.code === 'P2025') {
-      res.status(404).json(errorResponse('Record not found'));
+      res.status(404).json(errorResponse('Record not found', 'DATABASE_NOT_FOUND_ERROR'));
+      return;
+    }
+    if (prismaErr.code === 'P1001') {
+      res.status(503).json(errorResponse('Cannot connect to the database. Please verify your connection settings.', 'DATABASE_CONNECTION_ERROR'));
       return;
     }
   }
 
   if (err.name === 'JsonWebTokenError') {
-    res.status(401).json(errorResponse('Invalid token'));
+    res.status(401).json(errorResponse('Invalid token', 'INVALID_TOKEN_ERROR'));
     return;
   }
   if (err.name === 'TokenExpiredError') {
-    res.status(401).json(errorResponse('Token expired'));
+    res.status(401).json(errorResponse('Token expired', 'TOKEN_EXPIRED_ERROR'));
     return;
   }
 
@@ -51,6 +56,7 @@ export const errorHandler = (
   res.status(500).json(
     errorResponse(
       'Internal server error',
+      'INTERNAL_SERVER_ERROR',
       isDev ? [err.message, err.stack] : undefined
     )
   );

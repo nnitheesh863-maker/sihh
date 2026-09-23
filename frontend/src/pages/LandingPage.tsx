@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { ScanLine, ShieldCheck, FileText, ChevronRight, Star, Users, Activity, Leaf, ArrowRight, Menu, X, CheckCircle } from 'lucide-react';
 import { AuthModal } from '../components/AuthModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 // Common animation variants
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -25,10 +25,10 @@ const STATS = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', title: 'Upload Onion Image', desc: 'Take a photo of your onion using your phone camera or upload from gallery. JPG, PNG, WEBP supported.' },
-  { step: '02', title: 'AI Scans for Disease', desc: 'Our YOLO11n model scans the image, draws bounding boxes around affected areas, and calculates severity.' },
-  { step: '03', title: 'Get Full Disease Report', desc: 'See disease name, confidence, affected area %, severity level, symptoms, causes and treatment advice.' },
-  { step: '04', title: 'Download PDF Certificate', desc: 'Download a digitally signed PDF quality report to present at APMC procurement centers.' },
+  { step: '01', title: 'Upload Onion Image', desc: 'Take a photo of your onion using your phone camera or upload from gallery. JPG, PNG, WEBP supported.', icon: <ScanLine className="w-6 h-6" /> },
+  { step: '02', title: 'AI Scans for Disease', desc: 'Our YOLO11n model scans the image, draws bounding boxes around affected areas, and calculates severity.', icon: <Activity className="w-6 h-6" /> },
+  { step: '03', title: 'Get Full Disease Report', desc: 'See disease name, confidence, affected area %, severity level, symptoms, causes and treatment advice.', icon: <ShieldCheck className="w-6 h-6" /> },
+  { step: '04', title: 'Download PDF Certificate', desc: 'Download a digitally signed PDF quality report to present at APMC procurement centers.', icon: <FileText className="w-6 h-6" /> },
 ];
 
 const SERVICES = [

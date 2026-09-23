@@ -45,12 +45,20 @@ export interface BatchQualityReport {
 }
 
 export interface AiPredictionResponse {
-  qualityGatePassed: boolean;
-  qualityGateMessage: string;
+  qualityGatePassed?: boolean;
+  qualityGateMessage?: string;
   batchReport?: BatchQualityReport;
-  onions: OnionAnalysis[];
+  onions?: OnionAnalysis[];
+  grade?: 'A' | 'B' | 'C' | 'REJECTED' | string;
+  score?: number;
+  size?: string;
+  freshness?: 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  damage?: 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  recommendation?: 'ACCEPT' | 'CONDITIONAL_ACCEPT' | 'REJECT' | string;
+  defects?: AiDefect[];
+  modelVersion?: string;
   processedImage?: string;
-  processingTimeMs: number;
+  processingTimeMs?: number;
 }
 
 // ─── Auth Types ───────────────────────────────────────────────────────────────
