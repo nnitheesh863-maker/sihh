@@ -4,8 +4,9 @@ import { ExportService } from '../services/exportService';
 const router = Router();
 
 router.get('/batch/:id/csv', (req: Request, res: Response) => {
+  const paramId = Array.isArray(req.params.id) ? req.params.id[0] : (req.params.id || '');
   const dummyBatch = {
-    batchId: req.params.id,
+    batchId: paramId,
     batchCode: 'BATCH-2026-NASHIK-001',
     farmerName: 'Ramesh Patil',
     date: new Date().toISOString().split('T')[0],
@@ -26,7 +27,7 @@ router.get('/batch/:id/csv', (req: Request, res: Response) => {
 
   const csv = ExportService.generateCSV(dummyBatch);
   res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename=batch-${req.params.id}.csv`);
+  res.setHeader('Content-Disposition', `attachment; filename=batch-${paramId}.csv`);
   res.status(200).send(csv);
 });
 
