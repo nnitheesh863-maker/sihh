@@ -36,9 +36,13 @@ export const getPrismaClient = (): PrismaClient => {
 };
 
 export const connectDatabase = async (): Promise<void> => {
-  const client = getPrismaClient();
-  await client.$connect();
-  logger.info('✅ Database connected successfully');
+  try {
+    const client = getPrismaClient();
+    await client.$connect();
+    logger.info('✅ Database connected successfully');
+  } catch (error) {
+    logger.warn('⚠️ Database connection deferred/failed (verify DATABASE_URL env variable):', error);
+  }
 };
 
 export const disconnectDatabase = async (): Promise<void> => {

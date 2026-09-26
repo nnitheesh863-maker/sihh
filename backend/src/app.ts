@@ -64,8 +64,20 @@ export const createApp = (): Application => {
     })
   );
 
-  // ── Health check ──
-  app.get('/api/health', (_req: Request, res: Response) => {
+  // ── Welcome & Health check ──
+  app.get('/', (_req: Request, res: Response) => {
+    res.status(200).json({
+      success: true,
+      service: 'SIH26031 AI Onion Grading Platform Backend API',
+      version: '2.0.0',
+      endpoints: {
+        health: '/api/health',
+        docs: '/api/docs',
+      },
+    });
+  });
+
+  app.get(['/health', '/api/health'], (_req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       data: {
