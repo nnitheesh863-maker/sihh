@@ -3,6 +3,7 @@ import { OnionAnalysis } from '../types';
 import { Award, Download, X, QrCode, CheckCircle2, ShieldAlert } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { apiClient } from '../api/client';
 
 interface QualityCertificateProps {
   analysis: OnionAnalysis;
@@ -17,10 +18,6 @@ export const QualityCertificate: React.FC<QualityCertificateProps> = ({ analysis
   const handleDownloadPdf = async () => {
     try {
       setIsDownloading(true);
-      
-      // Import apiClient dynamically to avoid circular dependencies if any, 
-      // or just assume it is exported from '../api/client'
-      const { apiClient } = await import('../api/client');
       
       const res = await apiClient.get(`/certificate/${analysis.id}/pdf`, {
         responseType: 'blob',
