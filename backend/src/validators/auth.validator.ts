@@ -4,20 +4,19 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   phone: z
     .string()
-    .regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
-  email: z.string().email('Invalid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .transform((val) => val.replace(/[\s+()-]/g, '').replace(/^91(?=\d{10}$)/, ''))
+    .refine((val) => /^[6-9]\d{9}$/.test(val), {
+      message: 'Please enter a valid 10-digit mobile number (e.g. 9876543210)',
+    }),
+  email: z.string().email('Invalid email address').toLowerCase().trim(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['FARMER', 'PROCUREMENT_OFFICER', 'ADMIN']).default('FARMER'),
   village: z.string().max(100).optional(),
   district: z.string().max(100).optional(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address').toLowerCase().trim(),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -27,7 +26,13 @@ export const refreshTokenSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  phone: z.string().regex(/^[6-9]\d{9}$/).optional(),
+  phone: z
+    .string()
+    .transform((val) => val.replace(/[\s+()-]/g, '').replace(/^91(?=\d{10}$)/, ''))
+    .refine((val) => /^[6-9]\d{9}$/.test(val), {
+      message: 'Invalid phone number',
+    })
+    .optional(),
   village: z.string().max(100).optional(),
   district: z.string().max(100).optional(),
 });
