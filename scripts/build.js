@@ -2,74 +2,68 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Starting robust Vercel multi-workspace build...');
+console.log('🚀 [Build Engine] Initializing build workflow...');
 
-const runCommand = (cmd, options = {}) => {
-  console.log(`▶ Executing: ${cmd}`);
-  execSync(cmd, { stdio: 'inherit', env: { ...process.env, ...options.env } });
-};
+const rootDir = process.cwd();
+const frontendDir = fs.existsSync(path.join(rootDir, 'frontend'))
+  ? path.join(rootDir, 'frontend')
+  : rootDir;
 
-try {
-  let buildSucceeded = false;
+// 1. Ensure frontend dependencies are installed
+const frontendNodeModules = path.join(frontendDir, 'node_modules');
+const viteInFrontend = path.join(frontendDir, 'node_modules', 'vite', 'bin', 'vite.js');
+const viteInRoot = path.join(rootDir, 'node_modules', 'vite', 'bin', 'vite.js');
 
-  // Attempt 1: If current working directory has vite.config.ts directly
-  if (fs.existsSync(path.join(process.cwd(), 'vite.config.ts'))) {
-    try {
-      runCommand('npx vite build');
-      buildSucceeded = true;
-    } catch (e) {
-      console.warn('Attempt 1 failed, trying next...');
-    }
+if (!fs.existsSync(viteInFrontend) && !fs.existsSync(viteInRoot)) {
+  console.log('📦 Frontend dependencies not found. Installing now...');
+  try {
+    execSync('npm install --prefix frontend', { stdio: 'inherit', cwd: rootDir });
+  } catch (err) {
+    console.warn('npm install --prefix failed, trying direct npm install in frontend dir...');
+    execSync('npm install', { stdio: 'inherit', cwd: frontendDir });
   }
-
-  // Attempt 2: Run via npm workspace from root
-  if (!buildSucceeded) {
-    try {
-      runCommand('npm run build --workspace=frontend');
-      buildSucceeded = true;
-    } catch (e) {
-      console.warn('Attempt 2 (npm workspace) failed, trying direct prefix...');
-    }
-  }
-
-  // Attempt 3: Run with npm --prefix frontend
-  if (!buildSucceeded) {
-    try {
-      runCommand('npm --prefix frontend run build');
-      buildSucceeded = true;
-    } catch (e) {
-      console.warn('Attempt 3 (npm prefix) failed, trying direct npx vite build frontend...');
-    }
-  }
-
-  // Attempt 4: Direct Vite build on frontend folder
-  if (!buildSucceeded) {
-    try {
-      const frontendDir = path.join(process.cwd(), 'frontend');
-      runCommand(`npx vite build ${frontendDir}`);
-      buildSucceeded = true;
-    } catch (e) {
-      console.error('All build attempts failed:', e);
-      throw e;
-    }
-  }
-
-  // Synchronize dist folders so Vercel can find output wherever it looks
-  const frontendDist = path.join(process.cwd(), 'frontend', 'dist');
-  const rootDist = path.join(process.cwd(), 'dist');
-
-  if (fs.existsSync(frontendDist) && !fs.existsSync(rootDist)) {
-    fs.mkdirSync(rootDist, { recursive: true });
-    fs.cpSync(frontendDist, rootDist, { recursive: true });
-    console.log('✅ Synchronized frontend/dist to ./dist');
-  } else if (fs.existsSync(rootDist) && !fs.existsSync(frontendDist)) {
-    fs.mkdirSync(frontendDist, { recursive: true });
-    fs.cpSync(rootDist, frontendDist, { recursive: true });
-    console.log('✅ Synchronized ./dist to frontend/dist');
-  }
-
-  console.log('🎉 Build completed successfully!');
-} catch (err) {
-  console.error('❌ Build process encountered an error:', err.message || err);
-  process.exit(1);
 }
+
+// 2. Locate Vite executable
+let viteBin = null;
+if (fs.existsSync(viteInFrontend)) {
+  viteBin = viteInFrontend;
+} else if (fs.existsSync(viteInRoot)) {
+  viteBin = viteInRoot;
+}
+
+if (!viteBin) {
+  console.log('⚠️ Vite binary not found at standard path, attempting npx/npm run build fallback...');
+  try {
+    execSync('npm --prefix frontend run build', { stdio: 'inherit', cwd: rootDir });
+  } catch (e) {
+    execSync('npm run build --workspace=frontend', { stdio: 'inherit', cwd: rootDir });
+  }
+} else {
+  console.log(`⚡ Running Vite directly with Node from: ${viteBin}`);
+  execSync(`node "${viteBin}" build`, {
+    stdio: 'inherit',
+    cwd: frontendDir,
+    env: { ...process.env, NODE_ENV: 'production' },
+  });
+}
+
+// 3. Ensure distribution artifacts exist at both ./dist and ./frontend/dist for Vercel
+const frontendDist = path.join(frontendDir, 'dist');
+const rootDist = path.join(rootDir, 'dist');
+
+if (fs.existsSync(frontendDist)) {
+  if (!fs.existsSync(rootDist)) {
+    fs.mkdirSync(rootDist, { recursive: true });
+  }
+  fs.cpSync(frontendDist, rootDist, { recursive: true });
+  console.log('✅ Synchronized frontend/dist to root ./dist');
+} else if (fs.existsSync(rootDist)) {
+  if (!fs.existsSync(frontendDist)) {
+    fs.mkdirSync(frontendDist, { recursive: true });
+  }
+  fs.cpSync(rootDist, frontendDist, { recursive: true });
+  console.log('✅ Synchronized root ./dist to frontend/dist');
+}
+
+console.log('🎉 [Build Engine] Production build finished successfully!');
