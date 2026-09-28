@@ -1,12 +1,28 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (typeof window !== 'undefined') {
+    const isLocalHost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+
+    // If deployed on Vercel/Cloud and env points to localhost, rewrite to relative /api
+    if (!isLocalHost) {
+      if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+        return '/api';
+      }
+    }
+  }
+  return envUrl || '/api';
+};
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 12000,
 });
 
 // Request interceptor to attach JWT Access Token
@@ -28,7 +44,7 @@ apiClient.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+          const res = await axios.post(`${getApiBaseUrl()}/auth/refresh`, { refreshToken });
           if (res.data.success) {
             const { accessToken, refreshToken: newRefresh } = res.data.data;
             localStorage.setItem('accessToken', accessToken);
@@ -40,7 +56,6 @@ apiClient.interceptors.response.use(
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
-          window.location.href = '/login';
         }
       }
     }
