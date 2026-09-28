@@ -6,7 +6,7 @@ import {
   deactivateUser,
   activateUser,
 } from '../controllers/admin.controller';
-import { authenticate, authorize } from '../middlewares/auth.middleware';
+import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = Router();
 

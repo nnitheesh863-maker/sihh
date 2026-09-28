@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { analyzeOnion, getHistory, getAnalysisById, deleteAnalysis } from '../controllers/analysis.controller';
-import { authenticate } from '../middlewares/auth.middleware';
-import { upload } from '../middlewares/upload.middleware';
+import { authenticate } from '../middleware/auth.middleware';
+import { upload } from '../middleware/upload.middleware';
 
 const router = Router();
 

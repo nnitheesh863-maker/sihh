@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getProfile, updateProfile } from '../controllers/farmer.controller';
-import { authenticate, authorize } from '../middlewares/auth.middleware';
-import { validate } from '../middlewares/validate.middleware';
+import { authenticate, authorize } from '../middleware/auth.middleware';
+import { validate } from '../middleware/validate.middleware';
 import { updateProfileSchema } from '../validators/schemas';
 
 const router = Router();

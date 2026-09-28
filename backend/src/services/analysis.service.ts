@@ -4,7 +4,7 @@ import { s3Service } from '../aws/s3.service';
 import { AnalysisRepository } from '../repositories/analysis.repository';
 import { CertificateRepository } from '../repositories/certificate.repository';
 import { aiService } from '../ai/ai.client';
-import { generateS3Key } from '../middlewares/upload.middleware';
+import { generateS3Key } from '../middleware/upload.middleware';
 import { AiPredictionResponse } from '../types';
 import { AppError, NotFoundError } from '../utils/errors';
 import { logger } from '../utils/logger';

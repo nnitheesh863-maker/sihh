@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getCertificate, downloadCertificatePdf } from '../controllers/certificate.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 

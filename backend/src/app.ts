@@ -11,15 +11,18 @@ import { swaggerSpec } from './docs/swagger';
 import { logger } from './utils/logger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
-// ── New Modular Routes ──
+// ── Modular Routes ──
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import detectionRoutes from './routes/detection.routes';
 import historyRoutes from './routes/history.routes';
 import dashboardRoutes from './routes/dashboard.routes';
-
-// ── Aliased Routes for Full Backward Compatibility ──
-// Removed in architecture cleanup
+import procurementRoutes from './routes/procurement.routes';
+import farmerRoutes from './routes/farmer.routes';
+import certificateRoutes from './routes/certificate.routes';
+import adminRoutes from './routes/admin.routes';
+import exportRoutes from './routes/exportRoutes';
+import telemetryRoutes from './routes/telemetryRoutes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -69,7 +72,7 @@ export const createApp = (): Application => {
     res.status(200).json({
       success: true,
       service: 'SIH26031 AI Onion Grading Platform Backend API',
-      version: '2.0.0',
+      version: '2.1.0',
       endpoints: {
         health: '/api/health',
         docs: '/api/docs',
@@ -83,8 +86,8 @@ export const createApp = (): Application => {
       data: {
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '2.0.0',
-        service: 'SIH26031 YOLO11 Onion Grading API',
+        version: '2.1.0',
+        service: 'SIH26031 YOLO11 Onion Disease & Quality Diagnostic API',
       },
     });
   });
@@ -108,9 +111,12 @@ export const createApp = (): Application => {
   app.use(`${API}/detection`, detectionRoutes);
   app.use(`${API}/history`, historyRoutes);
   app.use(`${API}/dashboard`, dashboardRoutes);
-
-  // Backward compatibility alias routes
-  // Removed in architecture cleanup
+  app.use(`${API}/procurement`, procurementRoutes);
+  app.use(`${API}/farmers`, farmerRoutes);
+  app.use(`${API}/certificates`, certificateRoutes);
+  app.use(`${API}/admin`, adminRoutes);
+  app.use(`${API}/export`, exportRoutes);
+  app.use(`${API}/telemetry`, telemetryRoutes);
 
   // ── 404 handler ──
   app.use(notFoundHandler);
