@@ -1,7 +1,7 @@
 {
-  "name": "sih26031-onion-quality-system",
-  "version": "1.0.0",
-  "description": "AI-Powered Onion Quality Assessment & Grading System for Smart India Hackathon 2026",
+  "name": "peelvision-ai",
+  "version": "2.1.0",
+  "description": "Smart Onion Quality Assessment & Disease Diagnostic Platform for SIH 2026",
   "private": true,
   "workspaces": [
     "backend",
@@ -24,6 +24,6 @@
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
-  "author": "SIH Team",
+  "author": "PeelVision AI Team",
   "license": "MIT"
 }
