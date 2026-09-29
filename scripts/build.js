@@ -17,10 +17,10 @@ const viteInRoot = path.join(rootDir, 'node_modules', 'vite', 'bin', 'vite.js');
 if (!fs.existsSync(viteInFrontend) && !fs.existsSync(viteInRoot)) {
   console.log('📦 Frontend dependencies not found. Installing now...');
   try {
-    execSync('npm install --prefix frontend', { stdio: 'inherit', cwd: rootDir });
+    execSync('npm install --prefix frontend --ignore-scripts', { stdio: 'inherit', cwd: rootDir });
   } catch (err) {
     console.warn('npm install --prefix failed, trying direct npm install in frontend dir...');
-    execSync('npm install', { stdio: 'inherit', cwd: frontendDir });
+    execSync('npm install --ignore-scripts', { stdio: 'inherit', cwd: frontendDir });
   }
 }
 
