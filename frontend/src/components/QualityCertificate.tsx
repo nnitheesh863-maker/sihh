@@ -163,37 +163,58 @@ export const QualityCertificate: React.FC<QualityCertificateProps> = ({ analysis
     doc.text('YOLO11n Pathology Diagnosis & Treatment Plan:', 22, pathY + 8);
 
     if (analysisData.defects && analysisData.defects.length > 0) {
-      let defY = pathY + 16;
+      let defY = pathY + 14;
       analysisData.defects.forEach((d: any) => {
         doc.setFillColor(255, 255, 255);
         doc.setDrawColor(226, 232, 240);
-        doc.roundedRect(20, defY - 3, pageWidth - 40, 26, 2, 2, 'FD');
+        doc.roundedRect(20, defY - 3, pageWidth - 40, 48, 2, 2, 'FD');
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.setTextColor(180, 83, 9); // amber-700
         doc.text(`• ${d.diseaseName || d.defectType || 'Defect'}`, 24, defY + 2);
 
+        if (d.scientificName) {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(7.5);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Pathogen: ${d.scientificName}`, 24, defY + 6.5);
+        }
+
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(100, 116, 139);
         doc.text(`Confidence: ${Math.round((d.confidence || 0.9) * 100)}% | Severity: ${d.severity || 'Medium'}`, pageWidth - 80, defY + 2);
 
-        if (d.treatment) {
+        if (d.symptoms) {
           doc.setFont('helvetica', 'normal');
+          doc.setTextColor(51, 65, 85);
+          const splitSym = doc.splitTextToSize(`Symptoms: ${d.symptoms}`, pageWidth - 52);
+          doc.text(splitSym, 24, defY + 12);
+        }
+
+        if (d.treatment) {
+          doc.setFont('helvetica', 'bold');
           doc.setTextColor(5, 150, 105);
-          const splitTx = doc.splitTextToSize(`Rx: ${d.treatment}`, pageWidth - 52);
-          doc.text(splitTx, 26, defY + 8);
+          const splitTx = doc.splitTextToSize(`Rx Treatment: ${d.treatment}`, pageWidth - 52);
+          doc.text(splitTx, 24, defY + 22);
         }
 
         if (d.storageAdvice) {
           doc.setFont('helvetica', 'italic');
           doc.setTextColor(71, 85, 105);
-          const splitSa = doc.splitTextToSize(`Storage: ${d.storageAdvice}`, pageWidth - 52);
-          doc.text(splitSa, 26, defY + 15);
+          const splitSa = doc.splitTextToSize(`Storage/Quarantine: ${d.storageAdvice}`, pageWidth - 52);
+          doc.text(splitSa, 24, defY + 31);
         }
 
-        defY += 30;
+        if (d.marketAction) {
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(180, 83, 9);
+          const splitMa = doc.splitTextToSize(`APMC Action: ${d.marketAction}`, pageWidth - 52);
+          doc.text(splitMa, 24, defY + 40);
+        }
+
+        defY += 52;
       });
     } else {
       doc.setFillColor(236, 253, 245);
@@ -415,23 +436,42 @@ export const QualityCertificate: React.FC<QualityCertificateProps> = ({ analysis
             </div>
 
             {analysis.defects && analysis.defects.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {analysis.defects.map((d, i) => (
-                  <div key={i} className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5 shadow-sm">
+                  <div key={i} className="p-4 rounded-xl bg-white border border-slate-200 space-y-2 shadow-xs">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                      <span className="text-amber-900">• {d.diseaseName || d.defectType}</span>
+                      <div>
+                        <span className="text-amber-900">• {d.diseaseName || d.defectType}</span>
+                        {d.scientificName && (
+                          <span className="text-[10px] text-slate-500 font-semibold italic ml-2">({d.scientificName})</span>
+                        )}
+                      </div>
                       <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[10px]">
                         Accuracy: {Math.round((d.confidence || 0.9) * 100)}% ({d.severity || 'Medium'})
                       </span>
                     </div>
-                    {d.treatment && (
-                      <p className="text-[11px] text-slate-600 pl-3">
-                        <span className="text-emerald-700 font-bold">Rx Treatment:</span> {d.treatment}
+
+                    {d.symptoms && (
+                      <p className="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <span className="text-slate-900 font-bold">🔍 Symptoms:</span> {d.symptoms}
                       </p>
                     )}
+
+                    {d.treatment && (
+                      <p className="text-[11px] text-emerald-950 bg-emerald-50/70 p-2 rounded-lg border border-emerald-200">
+                        <span className="text-emerald-800 font-bold">🌱 Rx Treatment:</span> {d.treatment}
+                      </p>
+                    )}
+
                     {d.storageAdvice && (
-                      <p className="text-[11px] text-slate-500 pl-3 italic">
-                        <span className="text-slate-700 font-semibold not-italic">Storage:</span> {d.storageAdvice}
+                      <p className="text-[11px] text-slate-600 pl-1 italic">
+                        <span className="text-slate-800 font-semibold not-italic">Storage:</span> {d.storageAdvice}
+                      </p>
+                    )}
+
+                    {d.marketAction && (
+                      <p className="text-[11px] text-slate-700 pl-1">
+                        <span className="text-slate-800 font-bold">⚖️ APMC Action:</span> {d.marketAction}
                       </p>
                     )}
                   </div>

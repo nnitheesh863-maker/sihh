@@ -20,10 +20,10 @@ const panelVariants: Variants = {
 };
 
 const SAMPLE_IMAGES = [
-  { name: 'Purple Blotch', url: '/sample-1.jpg', status: 'completed' },
-  { name: 'High Grade', url: '/sample-2.jpg', status: 'to do' },
-  { name: 'Neck Rot', url: '/sample-3.jpg', status: 'in progress' },
-  { name: 'Fresh Batch', url: '/sample-4.jpg', status: 'completed' },
+  { name: 'Purple Blotch (Alternaria)', url: '/sample-1.jpg', status: 'Defect' },
+  { name: 'Grade A Specimen', url: '/sample-2.jpg', status: 'Healthy' },
+  { name: 'Botrytis Neck Rot', url: '/sample-3.jpg', status: 'Defect' },
+  { name: 'Fresh Cured Batch', url: '/sample-4.jpg', status: 'Healthy' },
 ];
 
 export const ScannerPage: React.FC = () => {
@@ -255,22 +255,86 @@ export const ScannerPage: React.FC = () => {
 
             {analysisResult ? (
               analysisResult.defects && analysisResult.defects.length > 0 ? (
-                <div className="space-y-3">
-                  {analysisResult.defects.map((d, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                        <span className="text-amber-900 flex items-center gap-1.5">• {d.diseaseName || d.defectType}</span>
-                        <span className="text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md border border-amber-200 text-[10px]">
-                          Accuracy: {Math.round((d.confidence || 0.9) * 100)}% ({d.severity || 'Medium'})
-                        </span>
+                <div className="space-y-4">
+                  {analysisResult.defects.map((d: any, i: number) => {
+                    const isSevere = d.severity === 'Severe' || d.severity === 'High';
+
+                    return (
+                      <div key={i} className={`p-5 rounded-2xl border space-y-3 shadow-xs transition-all ${
+                        isSevere ? 'bg-rose-50/80 border-rose-200' : 'bg-amber-50/80 border-amber-200'
+                      }`}>
+                        {/* Header: Exact Pathogen & Category */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-black/5">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${isSevere ? 'text-rose-600 animate-pulse' : 'text-amber-600'}`} />
+                              <span className={`text-sm font-extrabold ${isSevere ? 'text-rose-950' : 'text-amber-950'}`}>
+                                {d.diseaseName || d.defectType}
+                              </span>
+                            </div>
+                            {d.scientificName && (
+                              <p className="text-[11px] font-semibold text-slate-500 italic pl-7 mt-0.5">
+                                Pathogen: <span className="font-bold text-slate-700">{d.scientificName}</span> {d.category ? `• ${d.category}` : ''}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 self-start sm:self-auto pl-7 sm:pl-0">
+                            {d.areaPercentage && (
+                              <span className="text-[10px] font-bold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-700 shadow-2xs">
+                                Area: {d.areaPercentage}%
+                              </span>
+                            )}
+                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-md border shadow-2xs ${
+                              isSevere ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-amber-100 text-amber-800 border-amber-300'
+                            }`}>
+                              {Math.round((d.confidence || 0.9) * 100)}% Confidence ({d.severity || 'Medium'})
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Exact Symptoms */}
+                        {d.symptoms && (
+                          <div className="text-xs text-slate-800 bg-white/95 p-3 rounded-xl border border-slate-200 shadow-2xs">
+                            <span className="font-extrabold text-slate-900 block mb-0.5">🔍 Detected Morphological Symptoms:</span>
+                            <span className="text-slate-700 leading-relaxed">{d.symptoms}</span>
+                          </div>
+                        )}
+
+                        {/* Root Cause */}
+                        {d.rootCause && (
+                          <div className="text-xs text-slate-800 bg-white/95 p-3 rounded-xl border border-slate-200 shadow-2xs">
+                            <span className="font-extrabold text-slate-900 block mb-0.5">🌧️ Primary Root Cause:</span>
+                            <span className="text-slate-700 leading-relaxed">{d.rootCause}</span>
+                          </div>
+                        )}
+
+                        {/* Agronomic Treatment Prescription (Rx) */}
+                        {d.treatment && (
+                          <div className="text-xs text-emerald-950 bg-emerald-50/90 p-3 rounded-xl border border-emerald-300/80 shadow-2xs">
+                            <span className="text-emerald-900 font-black block mb-0.5">🌱 Agronomic Treatment Prescription (Rx):</span>
+                            <span className="text-emerald-950 font-medium leading-relaxed">{d.treatment}</span>
+                          </div>
+                        )}
+
+                        {/* Post-Harvest Storage & Quarantine */}
+                        {d.storageAdvice && (
+                          <div className="text-xs text-amber-950 bg-amber-50/90 p-3 rounded-xl border border-amber-200 shadow-2xs">
+                            <span className="text-amber-900 font-bold block mb-0.5">📦 Storage & Isolation Protocol:</span>
+                            <span className="text-amber-900/90 leading-relaxed">{d.storageAdvice}</span>
+                          </div>
+                        )}
+
+                        {/* APMC Market Action */}
+                        {d.marketAction && (
+                          <div className="text-xs text-slate-700 bg-slate-100/90 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between">
+                            <span className="font-bold text-slate-800">⚖️ APMC Market Action:</span>
+                            <span className="font-semibold text-slate-700">{d.marketAction}</span>
+                          </div>
+                        )}
                       </div>
-                      {d.treatment && (
-                        <p className="text-xs text-slate-600 pl-3 leading-relaxed">
-                          <span className="text-emerald-700 font-bold">Rx Treatment:</span> {d.treatment}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50/50 border border-emerald-200 space-y-3">

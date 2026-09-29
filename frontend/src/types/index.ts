@@ -25,11 +25,16 @@ export interface Defect {
   id?: string;
   defectType: string;
   diseaseName?: string | null;
+  scientificName?: string | null;
+  category?: string | null;
   confidence: number;
   areaPercentage?: number | null;
   severity?: 'Low' | 'Medium' | 'High' | 'Severe' | string | null;
+  symptoms?: string | null;
+  rootCause?: string | null;
   treatment?: string | null;
   storageAdvice?: string | null;
+  marketAction?: string | null;
   xMin?: number | null;
   yMin?: number | null;
   xMax?: number | null;
