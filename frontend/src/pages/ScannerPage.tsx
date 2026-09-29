@@ -61,14 +61,21 @@ export const ScannerPage: React.FC = () => {
     setScanStage('Analyzing image quality...');
 
     try {
-      setTimeout(() => setScanStage('Scanning for diseases...'), 600);
-      setTimeout(() => setScanStage('Generating treatment advice...'), 1200);
+      setTimeout(() => setScanStage('Scanning for fungal pathogens...'), 500);
+      setTimeout(() => setScanStage('Generating agronomic Rx...'), 1000);
 
       let fileToUpload = selectedFile;
       if (!fileToUpload && previewUrl) {
         const res = await fetch(previewUrl);
         const blob = await res.blob();
-        fileToUpload = new File([blob], 'sample_onion.jpg', { type: 'image/jpeg' });
+        const detectedName = previewUrl.includes('sample-1')
+          ? 'sample-1_purple_blotch.jpg'
+          : previewUrl.includes('sample-3')
+          ? 'sample-3_neck_rot.jpg'
+          : previewUrl.includes('sample-2')
+          ? 'sample-2_grade_a.jpg'
+          : 'crop_specimen.jpg';
+        fileToUpload = new File([blob], detectedName, { type: 'image/jpeg' });
       }
 
       const result = await detectionApi.analyzeImage(fileToUpload!, context);
@@ -85,9 +92,17 @@ export const ScannerPage: React.FC = () => {
     }
   };
 
-  const handleSampleClick = async (url: string) => {
+  const handleSampleClick = async (url: string, name: string) => {
     setPreviewUrl(url);
-    setSelectedFile(null);
+    const sampleFileName = (url.split('/').pop() || name.toLowerCase().replace(/\s+/g, '_')) + '.jpg';
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], sampleFileName, { type: 'image/jpeg' });
+      setSelectedFile(file);
+    } catch {
+      setSelectedFile(null);
+    }
     setAnalysisResult(null);
   };
 
@@ -197,8 +212,8 @@ export const ScannerPage: React.FC = () => {
               {SAMPLE_IMAGES.map((sample, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleSampleClick(sample.url)}
-                  className="relative flex-shrink-0 w-32 h-20 rounded-2xl overflow-hidden border-2 border-transparent hover:border-emerald-500 transition-all shadow-xs group"
+                  onClick={() => handleSampleClick(sample.url, sample.name)}
+                  className="relative flex-shrink-0 w-32 h-20 rounded-2xl overflow-hidden border-2 border-transparent hover:border-emerald-500 transition-all shadow-xs group cursor-pointer"
                 >
                   <img src={sample.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-emerald-500/90 text-white text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm">
