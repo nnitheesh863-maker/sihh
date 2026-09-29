@@ -119,14 +119,23 @@ export const OnionGrowthAnimation: React.FC<OnionGrowthAnimationProps> = ({
       <div className="relative flex-1 flex items-center justify-center my-2">
         <div className="relative w-full max-w-[340px] h-[190px] flex items-center justify-center">
 
-          {/* Ground / Surface Line */}
-          <div className="absolute top-[85px] inset-x-4 h-[3px] bg-gradient-to-r from-transparent via-emerald-600/80 to-transparent shadow-[0_0_12px_#059669]" />
+          {/* Ground / Surface Line - Soft Organic Horizon */}
+          <div className="absolute top-[85px] inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent pointer-events-none" />
           
           {/* Soil Layer (Bottom Half) */}
-          <div className="absolute top-[86px] inset-x-2 bottom-0 rounded-b-3xl bg-gradient-to-b from-[#2d1810] via-[#1c0e09] to-[#0d0604] border-t border-amber-900/40 overflow-hidden shadow-inner">
+          <div className="absolute top-[86px] inset-x-4 bottom-0 rounded-b-3xl bg-gradient-to-b from-[#24120b] via-[#170a05] to-[#0a0402] border-t border-amber-900/30 overflow-hidden shadow-inner">
             {/* Soil Texture Specks */}
-            <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:12px_12px]" />
-            <div className="absolute top-0 inset-x-0 h-4 bg-gradient-to-b from-black/40 to-transparent" />
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:12px_12px]" />
+            <div className="absolute top-0 inset-x-0 h-3 bg-gradient-to-b from-black/50 to-transparent" />
+          </div>
+
+          {/* Clean Contained AI Laser Scan Beam */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden flex flex-col justify-center items-center z-40">
+            <motion.div
+              animate={{ y: [-50, 60, -50] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-44 h-[2px] rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_14px_rgba(52,211,153,0.9)]"
+            />
           </div>
 
           {/* ── ROOT SYSTEM (Spreading into Soil) ─────────────────────────── */}

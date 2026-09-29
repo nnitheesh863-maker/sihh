@@ -62,9 +62,9 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={onEnterApp}>
             <div className="h-10 w-auto flex items-center justify-center">
-              <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain scale-110" />
+              <img src="/logo.png" alt="PeelVision AI Logo" className="h-full w-auto object-contain scale-110" />
             </div>
-            <span className="text-xl font-black text-gray-900">Onion<span className="text-emerald-600">AI</span></span>
+            <span className="text-xl font-black text-gray-900">PeelVision<span className="text-emerald-600">AI</span></span>
           </div>
 
           {/* Desktop nav */}
@@ -260,15 +260,15 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">About OnionAI</p>
+              <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">About PeelVision AI</p>
               <h2 className="text-4xl font-black text-gray-900 leading-tight mb-6">
                 We started with a simple goal: <em className="text-emerald-600 not-italic">protect India's onion farmers.</em>
               </h2>
               <p className="text-gray-600 leading-relaxed mb-6">
-                India is the world's second-largest onion producer — yet post-harvest disease losses devastate up to 30% of yield annually. OnionAI combines YOLO11n computer vision with agronomic knowledge to give every farmer instant, accurate disease diagnosis in their pocket.
+                India is the world's second-largest onion producer — yet post-harvest disease losses devastate up to 30% of yield annually. PeelVision AI combines YOLO11n computer vision with agronomic knowledge to give every farmer instant, accurate disease diagnosis in their pocket.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
-                Built for SIH 2026 (Problem SIH26031), our platform connects farmers, agronomists, and APMC procurement officers on a single digital platform.
+                Our platform connects farmers, agronomists, and APMC procurement officers on a single unified digital network.
               </p>
               <div className="flex gap-4">
                 <button onClick={openRegister} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full transition-colors text-sm">
@@ -407,11 +407,11 @@ export const LandingPage: React.FC<{ onEnterApp: () => void }> = ({ onEnterApp }
       <footer className="bg-slate-950 py-8 text-center border-t border-slate-800">
         <div className="flex items-center justify-center gap-3 mb-3">
           <div className="h-8 w-auto flex items-center justify-center grayscale brightness-200">
-            <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain" />
+            <img src="/logo.png" alt="PeelVision AI Logo" className="h-full w-auto object-contain" />
           </div>
-          <span className="text-white font-black text-lg">Onion<span className="text-emerald-400">AI</span></span>
+          <span className="text-white font-black text-lg">PeelVision<span className="text-emerald-400">AI</span></span>
         </div>
-        <p className="text-gray-400 text-xs">SIH26031 — AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
+        <p className="text-gray-400 text-xs">PeelVision AI — AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
         <p className="text-gray-600 text-xs mt-1">Built with React · Vite · Node.js · FastAPI · YOLO11n · Supabase</p>
       </footer>
 

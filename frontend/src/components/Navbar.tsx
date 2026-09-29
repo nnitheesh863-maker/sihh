@@ -17,9 +17,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         {/* Logo & Brand */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('scanner')}>
           <div className="h-12 w-auto flex items-center justify-center">
-            <img src="/logo.png" alt="OnionAI Logo" className="h-full w-auto object-contain scale-110" />
+            <img src="/logo.png" alt="PeelVision AI Logo" className="h-full w-auto object-contain scale-110" />
           </div>
-          <span className="font-bold text-lg text-slate-800 tracking-tight">OnionAI</span>
+          <span className="font-bold text-lg text-slate-800 tracking-tight">PeelVision<span className="text-emerald-600">AI</span></span>
         </div>
 
         {/* Center Search Bar */}

@@ -10,7 +10,7 @@ interface LanguageContextType {
 
 const translations: Record<SupportedLanguage, Record<string, string>> = {
   en: {
-    appTitle: 'AI Onion Quality Assessment System',
+    appTitle: 'PeelVision AI – Onion Quality Assessment System',
     startGrading: 'Start Conveyor Grading',
     gradeA: 'Grade A (Export)',
     gradeB: 'Grade B (Domestic)',

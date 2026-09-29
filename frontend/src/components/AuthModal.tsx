@@ -148,14 +148,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSuccess, 
             </button>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg shadow-emerald-950/20">
-                <img src="/logo.png" alt="OnionAI" className="w-full h-full object-contain" />
+                <img src="/logo.png" alt="PeelVision AI" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                  Onion<span className="text-emerald-300">AI</span>
+                  PeelVision<span className="text-emerald-300">AI</span>
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">
-                  SIH26031 Platform
+                  Smart Quality Platform
                 </span>
               </div>
             </div>

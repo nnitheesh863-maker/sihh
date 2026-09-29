@@ -15,13 +15,27 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   // Admin
-  const adminPassword = await bcrypt.hash('Admin@123', 12);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@oniongrading.in' },
-    update: {},
+  const adminPassword = await bcrypt.hash('Password123', 12);
+  await prisma.user.upsert({
+    where: { email: 'admin@gmail.com' },
+    update: { password: adminPassword },
     create: {
       name: 'System Admin',
-      email: 'admin@oniongrading.in',
+      email: 'admin@gmail.com',
+      phone: '9000000000',
+      password: adminPassword,
+      role: 'ADMIN',
+      village: 'Nashik',
+      district: 'Nashik',
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'admin@sih.gov.in' },
+    update: { password: adminPassword },
+    create: {
+      name: 'System Admin',
+      email: 'admin@sih.gov.in',
       phone: '9000000001',
       password: adminPassword,
       role: 'ADMIN',
@@ -30,11 +44,38 @@ async function main() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: 'admin@oniongrading.in' },
+    update: { password: adminPassword },
+    create: {
+      name: 'System Admin',
+      email: 'admin@oniongrading.in',
+      phone: '9000000005',
+      password: adminPassword,
+      role: 'ADMIN',
+      village: 'Nashik',
+      district: 'Nashik',
+    },
+  });
+
   // Procurement Officer
-  const officerPassword = await bcrypt.hash('Officer@123', 12);
-  const officer = await prisma.user.upsert({
+  const officerPassword = await bcrypt.hash('Password123', 12);
+  await prisma.user.upsert({
+    where: { email: 'officer@sih.gov.in' },
+    update: { password: officerPassword },
+    create: {
+      name: 'Vikram Deshmukh (APMC)',
+      email: 'officer@sih.gov.in',
+      phone: '9876543211',
+      password: officerPassword,
+      role: 'PROCUREMENT_OFFICER',
+      district: 'Pune',
+    },
+  });
+
+  await prisma.user.upsert({
     where: { email: 'officer@oniongrading.in' },
-    update: {},
+    update: { password: officerPassword },
     create: {
       name: 'Raj Patil',
       email: 'officer@oniongrading.in',
@@ -46,14 +87,28 @@ async function main() {
   });
 
   // Demo Farmer
-  const farmerPassword = await bcrypt.hash('Farmer@123', 12);
-  const farmer = await prisma.user.upsert({
+  const farmerPassword = await bcrypt.hash('Password123', 12);
+  await prisma.user.upsert({
+    where: { email: 'farmer@sih.gov.in' },
+    update: { password: farmerPassword },
+    create: {
+      name: 'Sanjay Kumar (Farmer)',
+      email: 'farmer@sih.gov.in',
+      phone: '9876543210',
+      password: farmerPassword,
+      role: 'FARMER',
+      village: 'Lasalgaon',
+      district: 'Nashik',
+    },
+  });
+
+  await prisma.user.upsert({
     where: { email: 'farmer@example.com' },
-    update: {},
+    update: { password: farmerPassword },
     create: {
       name: 'Sanjay Kumar',
       email: 'farmer@example.com',
-      phone: '9876543210',
+      phone: '9876543219',
       password: farmerPassword,
       role: 'FARMER',
       village: 'Lasalgaon',

@@ -25,7 +25,7 @@ const MainContent: React.FC = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 text-sm font-semibold">Loading OnionAI Platform...</p>
+          <p className="text-gray-500 text-sm font-semibold">Loading PeelVision AI Platform...</p>
         </div>
       </div>
     );
@@ -39,8 +39,8 @@ const MainContent: React.FC = () => {
     <div className="min-h-screen bg-[#eef6ef] text-slate-800 flex flex-col selection:bg-emerald-500 selection:text-white">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="flex-1 pb-12 p-4 md:p-8">
-        <div className="max-w-[1600px] mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[85vh]">
+      <main className="flex-1 pb-10 p-3 sm:p-6 md:p-8 flex flex-col items-center">
+        <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[80vh]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -62,7 +62,7 @@ const MainContent: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-transparent py-4 text-center text-xs text-slate-500">
-        <p>SIH26031 – AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
+        <p>PeelVision AI – AI-Powered Onion Quality Assessment & Disease Grading Platform</p>
         <p className="mt-1 text-[11px] text-slate-400">Built with React, Vite, TailwindCSS, Express, Prisma, YOLO11n Computer Vision.</p>
       </footer>
     </div>

@@ -18,11 +18,11 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ stage }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl overflow-hidden">
       <motion.div
         initial={{ opacity: 0, scale: 0.92, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-lg p-6 rounded-[2.5rem] bg-slate-900/90 border border-emerald-500/30 text-center space-y-5 shadow-2xl shadow-emerald-500/15"
+        className="w-full max-w-lg p-6 rounded-[2.5rem] bg-slate-900/90 border border-emerald-500/30 text-center space-y-5 shadow-2xl shadow-emerald-500/15 overflow-hidden"
       >
         {/* 3D Onion Growing in Soil Animation */}
         <OnionGrowthAnimation progress={progress} compact statusText={stage} />

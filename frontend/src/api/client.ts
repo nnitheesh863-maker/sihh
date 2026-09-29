@@ -39,10 +39,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthUrl = originalRequest?.url?.includes('/auth/login') ||
+                      originalRequest?.url?.includes('/auth/register') ||
+                      originalRequest?.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthUrl) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
+      if (refreshToken && !refreshToken.startsWith('mock_')) {
         try {
           const res = await axios.post(`${getApiBaseUrl()}/auth/refresh`, { refreshToken });
           if (res.data.success) {

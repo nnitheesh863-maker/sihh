@@ -71,7 +71,7 @@ export const createApp = (): Application => {
   app.get('/', (_req: Request, res: Response) => {
     res.status(200).json({
       success: true,
-      service: 'SIH26031 AI Onion Grading Platform Backend API',
+      service: 'PeelVision AI – Smart Onion Quality Assessment Platform API',
       version: '2.1.0',
       endpoints: {
         health: '/api/health',
@@ -87,7 +87,7 @@ export const createApp = (): Application => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: '2.1.0',
-        service: 'SIH26031 YOLO11 Onion Disease & Quality Diagnostic API',
+        service: 'PeelVision AI YOLO11 Onion Disease & Quality Diagnostic API',
       },
     });
   });
@@ -114,6 +114,7 @@ export const createApp = (): Application => {
   app.use(`${API}/procurement`, procurementRoutes);
   app.use(`${API}/farmers`, farmerRoutes);
   app.use(`${API}/certificates`, certificateRoutes);
+  app.use(`${API}/certificate`, certificateRoutes);
   app.use(`${API}/admin`, adminRoutes);
   app.use(`${API}/export`, exportRoutes);
   app.use(`${API}/telemetry`, telemetryRoutes);

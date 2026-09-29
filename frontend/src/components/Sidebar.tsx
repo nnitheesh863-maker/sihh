@@ -47,7 +47,7 @@ export const Sidebar: React.FC = () => {
             </div>
             {!collapsed && (
               <h1 className="text-xl font-bold tracking-tight text-white whitespace-nowrap">
-                OnionAI
+                PeelVision AI
               </h1>
             )}
           </div>

@@ -199,6 +199,9 @@ export const detectionApi = {
           defects: (result as any).defects || (result as any).analysis.defects || [],
           processedImageUrl: imageUrl,
           batchReport: (result as any).batchReport || (result as any).analysis.batchReport,
+          environmentalRisk: (result as any).environmentalRisk || (result as any).batchReport?.overallRiskLevel || 'Low',
+          overallRisk: (result as any).overallRisk || (result as any).batchReport?.overallRiskLevel || 'Low',
+          certificateUrl: (result as any).certificateUrl || (result as any).certificate?.pdfUrl,
         };
 
         // Persist to local history
