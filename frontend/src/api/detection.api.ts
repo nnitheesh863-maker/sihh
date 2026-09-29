@@ -214,9 +214,10 @@ export const detectionApi = {
       }
       return result;
     } catch (err: any) {
-      // If network fails (e.g. static Vercel preview or backend offline), fallback gracefully
-      if (!err.response || err.response.status >= 500 || err.code === 'ERR_NETWORK') {
-        console.warn('Backend detection offline, executing client-side YOLO11n grading engine');
+      // If network fails or static Vercel host returns 405/404, fallback gracefully
+      const status = err.response?.status;
+      if (!err.response || status >= 500 || status === 405 || status === 404 || err.code === 'ERR_NETWORK') {
+        console.warn(`Backend detection offline (status: ${status || err.code}), executing client-side YOLO11n grading engine`);
         return generateClientSideAnalysis(file, context);
       }
       throw err;

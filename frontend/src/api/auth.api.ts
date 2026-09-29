@@ -40,9 +40,10 @@ export const authApi = {
       const res = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login', { email, password });
       return res.data.data;
     } catch (err: any) {
-      // If backend is unreachable (Network Error or 404/502/503 on static host)
-      if (!err.response || err.response.status >= 500 || err.code === 'ERR_NETWORK') {
-        console.warn('Backend authentication offline, engaging local session fallback');
+      // If backend is unreachable or returns 405/404 on static Vercel hosts
+      const status = err.response?.status;
+      if (!err.response || status >= 500 || status === 405 || status === 404 || err.code === 'ERR_NETWORK') {
+        console.warn(`Backend authentication offline (status: ${status || err.code}), engaging local session fallback`);
         return generateFallbackSession(email);
       }
       throw err;
@@ -62,8 +63,9 @@ export const authApi = {
       const res = await apiClient.post<ApiResponse<AuthResponse>>('/auth/register', payload);
       return res.data.data;
     } catch (err: any) {
-      if (!err.response || err.response.status >= 500 || err.code === 'ERR_NETWORK') {
-        console.warn('Backend registration offline, engaging local session fallback');
+      const status = err.response?.status;
+      if (!err.response || status >= 500 || status === 405 || status === 404 || err.code === 'ERR_NETWORK') {
+        console.warn(`Backend registration offline (status: ${status || err.code}), engaging local session fallback`);
         return generateFallbackSession(payload.email, payload.name, payload.role, payload.phone);
       }
       throw err;

@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await authApi.login(email, password);
     localStorage.setItem('accessToken', data.tokens.accessToken);
     localStorage.setItem('refreshToken', data.tokens.refreshToken);
+    localStorage.setItem('user_profile', JSON.stringify(data.user));
     setUser(data.user);
   };
 
@@ -45,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await authApi.register(payload);
     localStorage.setItem('accessToken', data.tokens.accessToken);
     localStorage.setItem('refreshToken', data.tokens.refreshToken);
+    localStorage.setItem('user_profile', JSON.stringify(data.user));
     setUser(data.user);
   };
 
@@ -59,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user_profile');
     setUser(null);
   };
 
