@@ -3,7 +3,7 @@ import { detectionApi } from '../api/detection.api';
 import { OnionAnalysis } from '../types';
 import { BoundingBoxViewer } from '../components/BoundingBoxViewer';
 import { LoadingOverlay } from '../components/LoadingOverlay';
-import { Upload, Sparkles, AlertTriangle, ArrowRight, Activity, Leaf, CheckCircle2, FileText } from 'lucide-react';
+import { Upload, Sparkles, AlertTriangle, ArrowRight, Activity, Leaf, CheckCircle2, FileText, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { AnimatedCounter } from '../components/AnimatedCounter';
